@@ -6,6 +6,7 @@ import polling.USPoller;
 import utility.Utility;
 import lejos.hardware.Sound;
 // TODO Localization Routine needs to be generalized and Threaded
+//TODO Extract constants to Constants file
 public class USLocalizer implements LocalizationInterface {
 	public enum LocalizationType { FALLING_EDGE, RISING_EDGE }
 	public static int ROTATION_SPEED = 80;

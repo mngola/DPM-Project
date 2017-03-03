@@ -1,7 +1,9 @@
 package odometry;
 
+import lejos.hardware.motor.EV3LargeRegulatedMotor;
+
 public interface OdometerInterface {
-	public void getPosition(double[] position, boolean[] update);
+	public void getPosition(double[] position);
 	public double getX();
 	public double getY();
 	public double getTheta();
@@ -9,8 +11,5 @@ public interface OdometerInterface {
 	public void setX(double x);
 	public void setY(double y);
 	public void setTheta(double theta);
-	public int getLeftMotorTachoCount();
-	public void setLeftMotorTachoCount(int leftMotorTachoCount);
-	public int getRightMotorTachoCount();
-	public void setRightMotorTachoCount(int rightMotorTachoCount);
+	public EV3LargeRegulatedMotor [] getMotors();
 }

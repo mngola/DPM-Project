@@ -13,10 +13,15 @@ public class Constants {
 	public static final int BAND_CENTER = 32;
 	public static final int BANDWIDTH = 3;
 
-	public static final double SENSOR_DISTANCE = 5.0; 
-	public static final double LIGHT_LIMIT = 0.38;
+	public static final double LIGHT_SENSOR_DISTANCE = 12.5; 
+	public static final double UPPER_LIGHT = 0.45;
+	public static final double LOWER_LIGHT = 0.4;
 
 	public static final int FAST_SPEED = 200;
 	public static final int SLOW_SPEED = 100;
 	public static final int ACCELERATION = 4000;
+	public static final int ROTATION_SPEED = 80;
+	
+	public static final double LOW_NOISE = 101.0;
+	public static final double UPPER_NOISE = 101.0;
 }

@@ -3,15 +3,10 @@ package localization;
 import navigation.FullNavigator;
 import odometry.Odometer;
 import lejos.robotics.SampleProvider;
-//TODO Localization Routine needs to be generalized and Threaded
-// TODO Extract constants to Constants file
-public class LightLocalizer {
-	//Constants
-	private static final double LS_DIST = 12.5;
-	private static final double upperLight = 0.45;
-	private static final double lowerLight = 0.4;
-	public static int ROTATION_SPEED = 30;
+import constants.Constants;
 
+//TODO Localization Routine needs to be generalized and Threaded
+public class LightLocalizer {
 	private Odometer odo;
 	private SampleProvider colorSensor;
 	private float[] colorData;	
@@ -36,7 +31,7 @@ public class LightLocalizer {
 		int lines = 0;
 		double[] lineAngles = new double[4];
 		// start rotating and clock all 4 gridlines
-		navigator.setSpeeds(ROTATION_SPEED, -ROTATION_SPEED);
+		navigator.setSpeeds(Constants.ROTATION_SPEED, -Constants.ROTATION_SPEED);
 		
 		boolean overLine = false;
 		//Used correcting the line angles
@@ -50,12 +45,12 @@ public class LightLocalizer {
 		 */
 		while (lines < 4) {
 			colorSensor.fetchSample(colorData, 0);
-			if ((colorData[0] < lowerLight) && (!overLine)) 
+			if ((colorData[0] < Constants.LOWER_LIGHT) && (!overLine)) 
 			{
 				lineAngle1 = odo.getTheta();
 				overLine = true;
 			}
-			if ((colorData[0] > upperLight) && (overLine)) 
+			if ((colorData[0] > Constants.UPPER_LIGHT) && (overLine)) 
 			{
 				lineAngle2 = odo.getTheta();
 				lineAngles[lines] = (lineAngle2 + lineAngle1) / 2.0;
@@ -73,14 +68,14 @@ public class LightLocalizer {
 		if(thetaX > 180.0) {
 			thetaX = 360.0 - thetaX;
 		}
-		double correctX = -LS_DIST * Math.cos(Math.toRadians(thetaX / 2.0));
+		double correctX = -Constants.LIGHT_SENSOR_DISTANCE * Math.cos(Math.toRadians(thetaX / 2.0));
 		
 		//Compute the offset of the y distance
 		double thetaY = Math.abs(lineAngles[1] - lineAngles[3]);
 		if(thetaY > 180.0) {
 			thetaY = 360.0 - thetaX;
 		}
-		double correctY = -LS_DIST * Math.cos(Math.toRadians(thetaY / 2.0));
+		double correctY = -Constants.LIGHT_SENSOR_DISTANCE * Math.cos(Math.toRadians(thetaY / 2.0));
 
 		//Correct Theta
 		double deltaTheta = 270 + (thetaX/2.0) - lineAngles[0];

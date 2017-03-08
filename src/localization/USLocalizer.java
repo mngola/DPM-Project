@@ -5,20 +5,17 @@ import odometry.Odometer;
 import polling.USPoller;
 import utility.Utility;
 import lejos.hardware.Sound;
+import constants.Constants;
+
 // TODO Localization Routine needs to be generalized and Threaded
-//TODO Extract constants to Constants file
 public class USLocalizer implements LocalizationInterface {
 	public enum LocalizationType { FALLING_EDGE, RISING_EDGE }
-	public static int ROTATION_SPEED = 80;
-
+	
 	private Odometer odo;
-	USPoller poller;
+	private USPoller poller;
 	private LocalizationType locType;
 
 	private FullNavigator navigator;
-
-	double lowNoise = 101.0;
-	double upperNoise = 107.0;
 
 	public USLocalizer(Odometer odom,  USPoller us, LocalizationType loc, FullNavigator navi) {
 		odo = odom;
@@ -34,7 +31,7 @@ public class USLocalizer implements LocalizationInterface {
 		boolean wall = false, inNoiseMargin = false;
 
 		//if the filter is under the average noise, you're facing a wall
-		if(poller.getDistance() < (lowNoise + upperNoise)/2.0)
+		if(poller.getDistance() < (Constants.LOW_NOISE + Constants.UPPER_NOISE)/2.0)
 		{
 			wall = true;
 		}
@@ -42,15 +39,15 @@ public class USLocalizer implements LocalizationInterface {
 		if (locType == LocalizationType.FALLING_EDGE) {
 
 			//begin rotating 
-			navigator.setSpeeds(ROTATION_SPEED, -ROTATION_SPEED);
+			navigator.setSpeeds(Constants.ROTATION_SPEED, -Constants.ROTATION_SPEED);
 
 			//If the robot starts facing a wall, adjust until it's not 
 			while(wall) {
-				if(inNoiseMargin && (poller.getDistance() > upperNoise)) {
+				if(inNoiseMargin && (poller.getDistance() > Constants.UPPER_NOISE)) {
 					wall = false;
 					inNoiseMargin = false;
 				}
-				else if(poller.getDistance() > lowNoise) {
+				else if(poller.getDistance() > Constants.LOW_NOISE) {
 					inNoiseMargin = true;
 				}
 			}
@@ -63,34 +60,34 @@ public class USLocalizer implements LocalizationInterface {
 			 * Stop the robot
 			 */
 			while(!wall){
-				if(inNoiseMargin && (poller.getDistance() < lowNoise))
+				if(inNoiseMargin && (poller.getDistance() < Constants.LOW_NOISE))
 				{
 					angleA = latchEdge(false);
 					Sound.playTone(4000, 200);
 					navigator.stopMotors();
 					wall = true;
 				}
-				else if(poller.getDistance() < upperNoise)
+				else if(poller.getDistance() < Constants.UPPER_NOISE)
 				{
 					inNoiseMargin = true;
 				}
 			}
 			
 			//Rotate in the other direction
-			navigator.setSpeeds(-ROTATION_SPEED, ROTATION_SPEED);
+			navigator.setSpeeds(-Constants.ROTATION_SPEED, Constants.ROTATION_SPEED);
 			
 			wall = false;
 			inNoiseMargin = false;
 			//Keep rotating till the robot finds the other angle, then latch to it
 			while(!wall){
-				if(inNoiseMargin && (poller.getDistance() < lowNoise))
+				if(inNoiseMargin && (poller.getDistance() < Constants.LOW_NOISE))
 				{
 					angleB = latchEdge(false);
 					Sound.playTone(4000, 100);
 					navigator.stopMotors();
 					wall = true;
 				}
-				else if(poller.getDistance() > upperNoise)
+				else if(poller.getDistance() > Constants.UPPER_NOISE)
 				{
 					inNoiseMargin = true;
 				}
@@ -106,15 +103,15 @@ public class USLocalizer implements LocalizationInterface {
 			}
 		} else {
 			//Begin rotating
-			navigator.setSpeeds(ROTATION_SPEED, -ROTATION_SPEED);
+			navigator.setSpeeds(Constants.ROTATION_SPEED, -Constants.ROTATION_SPEED);
 			
 			//If the robot starts facing a space, adjust until it's not 
 			while(!wall) {
-				if(inNoiseMargin && (poller.getDistance() < upperNoise)) {
+				if(inNoiseMargin && (poller.getDistance() < Constants.UPPER_NOISE)) {
 					wall = true;
 					inNoiseMargin = false;
 				}
-				else if(poller.getDistance() < lowNoise) {
+				else if(poller.getDistance() < Constants.LOW_NOISE) {
 					inNoiseMargin = true;
 				}
 			}
@@ -126,27 +123,27 @@ public class USLocalizer implements LocalizationInterface {
 			 * Stop the robot
 			 */
 			while(wall){
-				if(inNoiseMargin && (poller.getDistance() > upperNoise))
+				if(inNoiseMargin && (poller.getDistance() > Constants.UPPER_NOISE))
 				{
 					angleA = latchEdge(true);
 					Sound.playTone(4000, 200);
 					navigator.stopMotors();
 					wall = false;
 				}
-				else if(poller.getDistance() > lowNoise)
+				else if(poller.getDistance() > Constants.LOW_NOISE)
 				{
 					inNoiseMargin = true;
 				}
 			}
 
 			//Rotate in other direction
-			navigator.setSpeeds(-ROTATION_SPEED, ROTATION_SPEED);
+			navigator.setSpeeds(-Constants.ROTATION_SPEED, Constants.ROTATION_SPEED);
 			wall = true;
 			inNoiseMargin = false;
 
 			//Keep rotating till the robot finds the other angle, then latch to it
 			while(wall){
-				if(inNoiseMargin && (poller.getDistance() > upperNoise))
+				if(inNoiseMargin && (poller.getDistance() > Constants.UPPER_NOISE))
 				{
 					angleB = latchEdge(true);
 					Sound.playTone(4000, 100);
@@ -154,7 +151,7 @@ public class USLocalizer implements LocalizationInterface {
 					wall = false;
 					inNoiseMargin = false;
 				}
-				else if(poller.getDistance() < lowNoise)
+				else if(poller.getDistance() < Constants.LOW_NOISE)
 				{
 					inNoiseMargin = true;
 				}
@@ -184,10 +181,10 @@ public class USLocalizer implements LocalizationInterface {
 		if (move) {
 			boolean wall = true;
 			while (wall) {
-				if (inNoiseMargin && (poller.getDistance() > lowNoise)) {
+				if (inNoiseMargin && (poller.getDistance() > Constants.LOW_NOISE)) {
 					ang2 = odo.getTheta();
 					wall = false;
-				} else if (poller.getDistance() > upperNoise) {
+				} else if (poller.getDistance() > Constants.UPPER_NOISE) {
 					ang1 = odo.getTheta();
 					inNoiseMargin = true;
 				}
@@ -196,10 +193,10 @@ public class USLocalizer implements LocalizationInterface {
 		else {
 			boolean wall = false;
 			while (!wall) {
-				if (inNoiseMargin && (poller.getDistance() < lowNoise)) {
+				if (inNoiseMargin && (poller.getDistance() < Constants.LOW_NOISE)) {
 					ang2 = odo.getTheta();
 					wall = true;
-				} else if (poller.getDistance() < upperNoise) {
+				} else if (poller.getDistance() < Constants.UPPER_NOISE) {
 					ang1 = odo.getTheta();
 					inNoiseMargin = true;
 				}

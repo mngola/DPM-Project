@@ -63,6 +63,7 @@ public class Display extends Thread implements DisplayInterface  {
 	@Override
 	public void displayOdometer() {
 		
+		//Constants
 		double[] position = new double[3];
 		long displayStart, displayEnd;
 		

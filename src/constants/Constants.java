@@ -7,7 +7,7 @@ public class Constants {
 	public static final long DISPLAY_PERIOD = 250;
 	public static final long NAV_PERIOD = 50;
 	
-	public static final double WHEEL_RADIUS = 2;
+	public static final double WHEEL_RADIUS = 2.12;
 	public static final double TRACK = 10.5;
 
 	public static final int BAND_CENTER = 32;

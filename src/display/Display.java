@@ -17,7 +17,7 @@ public class Display extends Thread implements DisplayInterface  {
 			this.t = t;
 		}
 		
-	// run method (required for Thread)
+	// run method
 	public void run(){
 		
 		//Clear the display

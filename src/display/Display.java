@@ -11,7 +11,7 @@ public class Display extends Thread implements DisplayInterface  {
 	private Odometer odom;
 	int buttonChoice;
 
-		// constructor
+		// constructor.
 		public Display(Odometer odom, TextLCD t) {
 			this.odom = odom;
 			this.t = t;

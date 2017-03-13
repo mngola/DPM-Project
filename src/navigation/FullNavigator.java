@@ -14,7 +14,9 @@ public class FullNavigator extends Navigation {
 
 	private boolean isNavigating = false;
 
-	private double destx, desty;
+	private double destx;
+
+	private double desty;
 
 	USPoller usSensor;
 

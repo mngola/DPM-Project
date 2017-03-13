@@ -24,4 +24,8 @@ public class Constants {
 	
 	public static final double LOW_NOISE = 101.0;
 	public static final double UPPER_NOISE = 101.0;
+	
+	//Testing
+	public static final int FORWARD_SPEED = 250;
+	public static final int ROTATING_SPEED = 150;
 }

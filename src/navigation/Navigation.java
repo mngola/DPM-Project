@@ -9,9 +9,7 @@ public class Navigation extends Thread implements NavigationInterface {
 	final static double DEG_ERR = 3.0, CM_ERR = 1.0;
 	
 	protected Odometer odometer;
-	public static EV3LargeRegulatedMotor leftMotor;
-
-	public static EV3LargeRegulatedMotor rightMotor;
+	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 
 	public Navigation(Odometer odo) {
 		odometer = odo;

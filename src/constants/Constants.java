@@ -7,7 +7,7 @@ public class Constants {
 	public static final long DISPLAY_PERIOD = 250;
 	public static final long NAV_PERIOD = 50;
 	
-	public static final double WHEEL_RADIUS = 2.12;
+	public static final double WHEEL_RADIUS = 2.1;
 	public static final double TRACK = 10.5;
 
 	public static final int BAND_CENTER = 32;
@@ -24,8 +24,4 @@ public class Constants {
 	
 	public static final double LOW_NOISE = 101.0;
 	public static final double UPPER_NOISE = 101.0;
-	
-	//Testing
-	public static final int FORWARD_SPEED = 250;
-	public static final int ROTATING_SPEED = 150;
 }

@@ -10,7 +10,7 @@ import constants.Constants;
 // TODO Localization Routine needs to be generalized and Threaded
 public class USLocalizer implements LocalizationInterface {
 	public enum LocalizationType { FALLING_EDGE, RISING_EDGE }
-	
+
 	private Odometer odo;
 	private USPoller poller;
 	private LocalizationType locType;
@@ -27,7 +27,7 @@ public class USLocalizer implements LocalizationInterface {
 	public void doLocalization() {
 		//Initialize the position
 		double [] pos = {0.0,0.0,0.0};
-		double angleA=0.0, angleB=0.0,angleD;
+		double angleA=0.0, angleB=0.0,angleD = 0;
 		boolean wall = false, inNoiseMargin = false;
 
 		//if the filter is under the average noise, you're facing a wall
@@ -35,12 +35,10 @@ public class USLocalizer implements LocalizationInterface {
 		{
 			wall = true;
 		}
-		//Check the localization type
-		if (locType == LocalizationType.FALLING_EDGE) {
-
+		switch(locType) {
+		case FALLING_EDGE:
 			//begin rotating 
 			navigator.setSpeeds(Constants.ROTATION_SPEED, -Constants.ROTATION_SPEED);
-
 			//If the robot starts facing a wall, adjust until it's not 
 			while(wall) {
 				if(inNoiseMargin && (poller.getDistance() > Constants.UPPER_NOISE)) {
@@ -52,7 +50,7 @@ public class USLocalizer implements LocalizationInterface {
 				}
 			}
 			Sound.playTone(4000, 200);
-			
+
 			inNoiseMargin = false;
 			/*
 			 * Loop while there is no wall
@@ -72,10 +70,10 @@ public class USLocalizer implements LocalizationInterface {
 					inNoiseMargin = true;
 				}
 			}
-			
+
 			//Rotate in the other direction
 			navigator.setSpeeds(-Constants.ROTATION_SPEED, Constants.ROTATION_SPEED);
-			
+
 			wall = false;
 			inNoiseMargin = false;
 			//Keep rotating till the robot finds the other angle, then latch to it
@@ -92,7 +90,7 @@ public class USLocalizer implements LocalizationInterface {
 					inNoiseMargin = true;
 				}
 			}
-		
+
 
 			//Compute the angle correction
 			if (angleA < angleB) 
@@ -101,10 +99,11 @@ public class USLocalizer implements LocalizationInterface {
 			} else {
 				angleD = 225.0 - (angleA + angleB) / 2.0;
 			}
-		} else {
+			break;
+		case RISING_EDGE:
 			//Begin rotating
 			navigator.setSpeeds(Constants.ROTATION_SPEED, -Constants.ROTATION_SPEED);
-			
+
 			//If the robot starts facing a space, adjust until it's not 
 			while(!wall) {
 				if(inNoiseMargin && (poller.getDistance() < Constants.UPPER_NOISE)) {
@@ -116,7 +115,7 @@ public class USLocalizer implements LocalizationInterface {
 				}
 			}
 			Sound.playTone(4000, 200);
-			
+
 			/*
 			 * Loop while there is a wall
 			 * When the robot detect the rising edge, compute the angle A to latch to
@@ -164,6 +163,7 @@ public class USLocalizer implements LocalizationInterface {
 			} else {
 				angleD = 45.0 - (angleA + angleB) / 2.0;
 			}
+			break;
 		}
 		//Adjust the odometer with the correction
 		pos[2] = Utility.fixDegAngle(odo.getTheta() + angleD);

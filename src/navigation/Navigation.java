@@ -97,8 +97,7 @@ public class Navigation extends Thread implements NavigationInterface {
 	}
 	
 	protected double getDestAngle(double x, double y) {
-		double minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX()))
-				* (180.0 / Math.PI);
+		double minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
 		if (minAng < 0) {
 			minAng += 360.0;
 		}

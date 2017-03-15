@@ -21,13 +21,6 @@ public class ObstacleAvoidance extends Thread{
 		 * MUST call travelTo(x,y,false) to go around the
 		 * state machine
 		 * 
-		 * This means that you can't detect a new obstacle
-		 * while avoiding the first one. That's probably not something
-		 * you were going to do anyway.
-		 * 
-		 * Otherwise things get complicated and a lot of 
-		 * new states will be necessary.
-		 * 
 		 */
 		
 		nav.setSpeeds(0, 0);

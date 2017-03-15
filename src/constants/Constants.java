@@ -8,9 +8,9 @@ public class Constants {
 	public static final long NAV_PERIOD = 50;
 	
 	public static final double WHEEL_RADIUS = 2.1;
-	public static final double TRACK = 10.5;
+	public static final double TRACK = 11.5;
 
-	public static final int BAND_CENTER = 32;
+	public static final int BAND_CENTER = 15;
 	public static final int BANDWIDTH = 3;
 
 	public static final double LIGHT_SENSOR_DISTANCE = 12.5; 

@@ -4,10 +4,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import odometry.Odometer;
 import constants.Constants;
 
-public class Navigation extends Thread implements NavigationInterface {
-	//Constants
-	final static double DEG_ERR = 3.0, CM_ERR = 1.0;
-	
+public class Navigation extends Thread implements NavigationInterface {	
 	protected Odometer odometer;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 
@@ -84,20 +81,27 @@ public class Navigation extends Thread implements NavigationInterface {
 			turnTo(minAng, false);
 			setSpeeds(Constants.FAST_SPEED, Constants.FAST_SPEED);
 		}
-		this.setSpeeds(0, 0);
+		stopMotors();
 	}
 	
+	/*
+	 * Check if the robot has reached its destination, within the CM_ERR
+	 */
 	protected boolean checkIfDone(double x, double y) {
-		return Math.abs(x - odometer.getX()) < CM_ERR
-				&& Math.abs(y - odometer.getY()) < CM_ERR;
+		return Math.abs(x - odometer.getX()) < Constants.CM_ERR
+				&& Math.abs(y - odometer.getY()) < Constants.CM_ERR;
 	}
 	
+	/*
+	 * Check if the robot is facing the correct direction, within the DEG_ERR
+	 */
 	protected boolean facingDest(double angle) {
-		return Math.abs(angle - odometer.getTheta()) < DEG_ERR;
+		return Math.abs(angle - odometer.getTheta()) < Constants.DEG_ERR;
 	}
 	
+	// Compute the destination angle 
 	protected double getDestAngle(double x, double y) {
-		double minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
+		double minAng = Math.toDegrees((Math.atan2(y - odometer.getY(), x - odometer.getX())));
 		if (minAng < 0) {
 			minAng += 360.0;
 		}
@@ -112,10 +116,10 @@ public class Navigation extends Thread implements NavigationInterface {
 
 		double error = angle - odometer.getTheta();
 
-		while (Math.abs(error) > DEG_ERR) {
+		while (Math.abs(error) > Constants.DEG_ERR) {
 
 			error = angle - odometer.getTheta();
-
+			
 			if (error < -180.0) {
 				setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
 			} else if (error < 0.0) {
@@ -128,7 +132,7 @@ public class Navigation extends Thread implements NavigationInterface {
 		}
 
 		if (stop) {
-			setSpeeds(0, 0);
+			stopMotors();
 		}
 	}
 	

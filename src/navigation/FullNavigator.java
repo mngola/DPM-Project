@@ -71,18 +71,6 @@ public class FullNavigator extends Navigation {
 				}
 				break;
 			case TURNING:
-				/*
-				 * Note: you could probably use the original turnTo()
-				 * from BasicNavigator here without doing any damage.
-				 * It's cheating the idea of "regular and periodic" a bit
-				 * but if you're sure you never need to interrupt a turn there's
-				 * no harm.
-				 * 
-				 * However, this implementation would be necessary if you would like
-				 * to stop a turn in the middle (e.g. if you were travelling but also
-				 * scanning with a sensor for something...)
-				 * 
-				 */
 				double destAngle = getDestAngle(destx, desty);
 				turnTo(destAngle);
 				if(facingDest(destAngle)){
@@ -95,10 +83,12 @@ public class FullNavigator extends Navigation {
 					state = State.EMERGENCY;
 					avoidance = new ObstacleAvoidance(this);
 					avoidance.start();
-				} else if (!checkIfDone(destx, desty)) {
+				} 
+				else if (!checkIfDone(destx, desty)) {
 					updateTravel();
-				} else { // Arrived!
-					setSpeeds(0, 0);
+				} 
+				else { // Arrived!
+					stopMotors();
 					isNavigating = false;
 					state = State.INIT;
 				}

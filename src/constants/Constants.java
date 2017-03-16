@@ -9,6 +9,9 @@ public class Constants {
 	
 	public static final double WHEEL_RADIUS = 2.1;
 	public static final double TRACK = 11.5;
+	public static final double DEG_ERR = 3.0;
+	public static final double CM_ERR = 1.0;
+
 
 	public static final int BAND_CENTER = 15;
 	public static final int BANDWIDTH = 3;

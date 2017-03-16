@@ -1,9 +1,10 @@
 package main;
 
 import navigation.FullNavigator;
+import localization.USLocalizer;
+import localization.USLocalizer.LocalizationType;
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
-import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
@@ -11,6 +12,9 @@ import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 import odometry.Odometer;
 import polling.USPoller;
+import wifi.WifiConnection;
+
+import java.util.Map;
 
 public class DpmProject {
 
@@ -20,35 +24,74 @@ public class DpmProject {
 	//Sensors
 	private static final Port usPort = LocalEV3.get().getPort("S1");
 	private static FullNavigator nav;
-
+	//Wifi
+	private static final String SERVER_IP = "192.168.137.1";
+	private static final int TEAM_NUMBER = 8;
+	private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
 
 	public static void main(String[] args) {
-		int buttonChoice;
-
 		//Instaniate objects
-		final TextLCD t = LocalEV3.get().getTextLCD();
 
+		@SuppressWarnings("resource")
 		SensorModes usSensor = new EV3UltrasonicSensor(usPort);
 		SampleProvider usDistance = usSensor.getMode("Distance");
-		float[] usData = new float[usDistance.sampleSize()];
 
 
 		Odometer odometer = new Odometer(leftMotor, rightMotor);
-		USPoller usPoller = new USPoller(usDistance, usData);
+		USPoller usPoller = new USPoller(usDistance);
+		USLocalizer usl = new USLocalizer(odometer, usPoller, LocalizationType.FALLING_EDGE, nav);
 		nav = new FullNavigator(odometer,usPoller);
+		
 		usPoller.start();
 		odometer.start();
 		nav.start();
 
-		completeCourse();
+		wifiPrint();
+		//usl.doLocalization();
+		//nav.turnTo(0.0, true);
+		//odometer.setPosition(new double[] { 0.0, 0.0, 0.0 }, new boolean[] { true, true, true });
+
+		//completeCourse();
 
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);
 	}
 
+
+	private static void wifiPrint() {
+		System.out.println("Running..");
+		WifiConnection conn = new WifiConnection(SERVER_IP, TEAM_NUMBER, ENABLE_DEBUG_WIFI_PRINT);
+		try {
+			@SuppressWarnings("rawtypes")
+			Map data = conn.getData();
+
+			// Example 1: Print out all received data
+			System.out.println("Map:\n" + data);
+
+			// Example 2 : Print out specific values
+			int fwdTeam = ((Long) data.get("FWD_TEAM")).intValue();
+			System.out.println("Forward Team: " + fwdTeam);
+
+			int w1 = ((Long) data.get("w1")).intValue();
+			System.out.println("Defender zone size w1: " + w1);
+
+			// Example 3: Compare value
+			String orientation = (String) data.get("omega");
+			if (orientation.equals("N")) {
+				System.out.println("Orientation is North");
+			}
+			else {
+				System.out.println("Orientation is not North");
+			}
+
+		} catch (Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+	}
+
 	private static void completeCourse() {
 
-		int[][] waypoints = {{60,30},{30,30},{30,60},{60,0}};
+		int[][] waypoints = {{0,60},{0,0}};
 
 		for(int[] point : waypoints){
 			nav.travelTo(point[0],point[1],true);

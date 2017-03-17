@@ -4,6 +4,7 @@ import constants.Constants;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.filter.MeanFilter;
 import lejos.robotics.filter.MedianFilter;
+import lejos.robotics.filter.OffsetCorrectionFilter;
 
 public class USPoller extends Thread implements PollerInterface  {
 	private int distance;
@@ -18,9 +19,9 @@ public class USPoller extends Thread implements PollerInterface  {
 	public void run() {
 		while(true)
 		{
-			//medianFilterDistance();
-			sensor.fetchSample(sensorData, 0);
-			distance = (int) (sensorData[0]*100.0);
+			offsetFilterDistance();
+			//sensor.fetchSample(sensorData, 0);
+			//distance = (int) (sensorData[0]*100.0);
 			try {Thread.sleep(Constants.POLLER_PERIOD);} catch(Exception e) {}
 		}
 	}
@@ -30,11 +31,11 @@ public class USPoller extends Thread implements PollerInterface  {
 		return distance;
 	}
 
-	private void medianFilterDistance() {
-		SampleProvider average = new MedianFilter(sensor,5);
+	private void offsetFilterDistance() {
+		OffsetCorrectionFilter average = new OffsetCorrectionFilter(sensor);
 		float[] sample = new float[average.sampleSize()];
 		average.fetchSample(sample, 0);
-		distance = (int) (sample[0]*100.0);
+		distance = (int) (average.getMean()[0]*100.0);
 	}
 
 }

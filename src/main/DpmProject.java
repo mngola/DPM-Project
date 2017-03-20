@@ -4,6 +4,7 @@ import navigation.FullNavigator;
 import navigation.Navigation;
 import localization.USLocalizer;
 import localization.USLocalizer.LocalizationType;
+import launcher.Launcher;
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
@@ -24,6 +25,7 @@ public class DpmProject {
 
 	//Motors
 	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
+	private static final EV3LargeRegulatedMotor launchMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	//Sensors
 	private static final Port usPort = LocalEV3.get().getPort("S1");
@@ -45,21 +47,31 @@ public class DpmProject {
 		Odometer odometer = new Odometer(leftMotor, rightMotor);
 		USPoller usPoller = new USPoller(usDistance);
 		nav = new FullNavigator(odometer,usPoller);
-		//USLocalizer usl = new USLocalizer(odometer, usPoller, LocalizationType.FALLING_EDGE, nav);
+		USLocalizer usl = new USLocalizer(odometer, usPoller, LocalizationType.FALLING_EDGE, nav);
+		Launcher launch = new Launcher(odometer,nav,launchMotor);
+		Display print = new Display(odometer);
 
 		usPoller.start();
 		odometer.start();
 		nav.start();
-
-		Display print = new Display(odometer);
+		launch.start();
 		print.start();
+		
 		//wifiPrint();
 		//usl.doLocalization();
 		//nav.turnTo(0.0, true);
 		//odometer.setPosition(new double[] { 0.0, 0.0, 0.0 }, new boolean[] { true, true, true });
-
+		launchMotor.setAcceleration(9000);
+		launchMotor.setSpeed(800);
+		launchMotor.rotate(200);
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		launchMotor.rotate(-170);
 		//nav.setFloat();
-		completeCourse();
+		//completeCourse();
 
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);

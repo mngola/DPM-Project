@@ -2,6 +2,7 @@ package navigation;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import odometry.Odometer;
+import utility.Utility;
 import constants.Constants;
 
 public class Navigation extends Thread implements NavigationInterface {	
@@ -76,11 +77,18 @@ public class Navigation extends Thread implements NavigationInterface {
 	 */
 	public void travelTo(double x, double y) {
 		double minAng;
-		while (!checkIfDone(x,y)) {
-			minAng = getDestAngle(x,y);
-			turnTo(minAng, false);
-			setSpeeds(Constants.FAST_SPEED, Constants.FAST_SPEED);
-		}
+		minAng = getDestAngle(x,y);
+		double dx = x - odometer.getX(); //The change we want in x and y
+		double dy = y - odometer.getY();
+		double distance = Math.sqrt(dx*dx+dy*dy);
+		turnTo(minAng, false);
+		leftMotor.setSpeed(Constants.FAST_SPEED);//set the speeds
+		rightMotor.setSpeed(Constants.FAST_SPEED);
+		leftMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance), true); //Cover the distance to get to the next point
+		rightMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance), false);
+//		while (!checkIfDone(x,y)) {
+//			setSpeeds(Constants.FAST_SPEED, Constants.FAST_SPEED);
+//		}
 		stopMotors();
 	}
 	
@@ -114,22 +122,35 @@ public class Navigation extends Thread implements NavigationInterface {
 	 */
 	public void turnTo(double angle, boolean stop) {
 
-		double error = angle - odometer.getTheta();
-
-		while (Math.abs(error) > Constants.DEG_ERR) {
-
-			error = angle - odometer.getTheta();
-			
-			if (error < -180.0) {
-				setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
-			} else if (error < 0.0) {
-				setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
-			} else if (error > 180.0) {
-				setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
-			} else {
-				setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
-			}
+		leftMotor.setSpeed(Constants.SLOW_SPEED); //set the speeds at rotating speed
+		rightMotor.setSpeed(Constants.SLOW_SPEED);
+		double correctionangle = odometer.getTheta() - angle;  //The difference between the wanted value and our value
+		//To make sure we never go the longer way around
+		if(correctionangle<-180){
+			correctionangle += 360;
 		}
+		else if(correctionangle>180){
+			correctionangle -= 360;
+		}
+		leftMotor.rotate(Utility.convertAngle(Constants.WHEEL_RADIUS, Constants.TRACK, correctionangle), true);
+		rightMotor.rotate(-Utility.convertAngle(Constants.WHEEL_RADIUS, Constants.TRACK, correctionangle), false);
+		
+//		double error = angle - odometer.getTheta();
+//
+//		while (Math.abs(error) > Constants.DEG_ERR) {
+//
+//			error = angle - odometer.getTheta();
+//			
+//			if (error < -180.0) {
+//				setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
+//			} else if (error < 0.0) {
+//				setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
+//			} else if (error > 180.0) {
+//				setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
+//			} else {
+//				setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
+//			}
+//		}
 
 		if (stop) {
 			stopMotors();

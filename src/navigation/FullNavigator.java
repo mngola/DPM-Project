@@ -1,8 +1,10 @@
 package navigation;
 
+import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import constants.Constants;
 import odometry.Odometer;
 import polling.USPoller;
+import utility.Utility;
 
 public class FullNavigator extends Navigation {
 
@@ -12,6 +14,7 @@ public class FullNavigator extends Navigation {
 
 	State state;
 
+	private EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private boolean isNavigating = false;
 
 	private double destx, desty;
@@ -21,6 +24,9 @@ public class FullNavigator extends Navigation {
 	public FullNavigator(Odometer odo, USPoller us) {
 		super(odo);
 		usSensor = us;
+		EV3LargeRegulatedMotor[] motors = odometer.getMotors();
+		leftMotor = motors[0];
+		rightMotor = motors[1];
 	}
 
 	/*
@@ -57,7 +63,19 @@ public class FullNavigator extends Navigation {
 		 * the turn.
 		 */
 		super.turnTo(minAng,false);
-		this.setSpeeds(Constants.FAST_SPEED, Constants.FAST_SPEED);
+		double dx = destx - odometer.getX(); //The change we want in x and y
+		double dy = desty - odometer.getY();
+		double distance = Math.sqrt(dx*dx+dy*dy);
+		leftMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance), true); //Cover the distance to get to the next point
+		rightMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance), true);
+		while(!checkIfDone(destx,desty)){
+			if(usSensor.getDistance()<20)
+			{
+				int p =0;
+				p++;
+			}
+			System.out.println(usSensor.getDistance());
+		}
 	}
 
 	public void run() {
@@ -113,19 +131,18 @@ public class FullNavigator extends Navigation {
 
 
 	private void turnTo(double angle) {
-		double error;
-		error = angle - odometer.getTheta();
-
-		if (error < -180.0) {
-			this.setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
-		} else if (error < 0.0) {
-			this.setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
-		} else if (error > 180.0) {
-			this.setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
-		} else {
-			this.setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
+		leftMotor.setSpeed(Constants.SLOW_SPEED); //set the speeds at rotating speed
+		rightMotor.setSpeed(Constants.SLOW_SPEED);
+		double correctionangle = odometer.getTheta() - angle;  //The difference between the wanted value and our value
+		//To make sure we never go the longer way around
+		if(correctionangle<-180){
+			correctionangle += 360;
 		}
-
+		else if(correctionangle>180){
+			correctionangle -= 360;
+		}
+		leftMotor.rotate(Utility.convertAngle(Constants.WHEEL_RADIUS, Constants.TRACK, correctionangle), true);
+		rightMotor.rotate(-Utility.convertAngle(Constants.WHEEL_RADIUS, Constants.TRACK, correctionangle), false);
 	}
 
 	/*

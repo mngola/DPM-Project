@@ -22,7 +22,12 @@ public class ObstacleAvoidance extends Thread{
 		 * state machine
 		 * 
 		 */
-		
+		try {
+			nav.wait();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		nav.setSpeeds(0, 0);
 		nav.turnTo(0,true);
 		nav.goForward(5, false); //using false means the Navigation method is used

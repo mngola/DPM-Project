@@ -1,5 +1,6 @@
 package display;
 
+import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 import odometry.Odometer;
 import lejos.hardware.Button;
@@ -7,15 +8,15 @@ import constants.Constants;
 
 public class Display extends Thread implements DisplayInterface  {
 
-	private TextLCD t;
 	private Odometer odom;
 	int buttonChoice;
 
 		// constructor.
-		public Display(Odometer odom, TextLCD t) {
+		public Display(Odometer odom) {
 			this.odom = odom;
-			this.t = t;
 		}
+	
+	public static TextLCD t = LocalEV3.get().getTextLCD();
 		
 	// run method
 	public void run(){
@@ -144,6 +145,12 @@ public class Display extends Thread implements DisplayInterface  {
 		}
 		
 		return result;
+	}
+
+	@Override
+	public void displaySensor() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

@@ -26,7 +26,7 @@ public class USLocalizer implements LocalizationInterface {
 
 	public void doLocalization() {
 		//Initialize the position
-		double [] pos = {0.0,0.0,0.0};
+		double [] pos = new double[3];
 		double angleA=0.0, angleB=0.0,angleD = 0;
 		boolean wall = false, inNoiseMargin = false;
 

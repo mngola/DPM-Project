@@ -1,10 +1,12 @@
 package main;
 
 import navigation.FullNavigator;
+import navigation.Navigation;
 import localization.USLocalizer;
 import localization.USLocalizer.LocalizationType;
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
@@ -15,6 +17,8 @@ import polling.USPoller;
 import wifi.WifiConnection;
 
 import java.util.Map;
+
+import display.Display;
 
 public class DpmProject {
 
@@ -35,23 +39,27 @@ public class DpmProject {
 		@SuppressWarnings("resource")
 		SensorModes usSensor = new EV3UltrasonicSensor(usPort);
 		SampleProvider usDistance = usSensor.getMode("Distance");
+		TextLCD t = LocalEV3.get().getTextLCD();		
 
 
 		Odometer odometer = new Odometer(leftMotor, rightMotor);
 		USPoller usPoller = new USPoller(usDistance);
-		USLocalizer usl = new USLocalizer(odometer, usPoller, LocalizationType.FALLING_EDGE, nav);
 		nav = new FullNavigator(odometer,usPoller);
-		
+		//USLocalizer usl = new USLocalizer(odometer, usPoller, LocalizationType.FALLING_EDGE, nav);
+
 		usPoller.start();
 		odometer.start();
 		nav.start();
 
-		wifiPrint();
+		Display print = new Display(odometer);
+		print.start();
+		//wifiPrint();
 		//usl.doLocalization();
 		//nav.turnTo(0.0, true);
 		//odometer.setPosition(new double[] { 0.0, 0.0, 0.0 }, new boolean[] { true, true, true });
 
-		//completeCourse();
+		//nav.setFloat();
+		completeCourse();
 
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);

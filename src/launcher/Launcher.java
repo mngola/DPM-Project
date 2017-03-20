@@ -42,7 +42,7 @@ public class Launcher extends Thread implements LauncherInterface {
 		
 		//Rotate the ball back
 		motor.setAcceleration(1000);
-		motor.setSpeed(Constants.ROTATING_SPEED);
+		motor.setSpeed(Constants.ROTATION_SPEED);
 		motor.rotate(-180);
 		
 		}

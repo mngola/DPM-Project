@@ -94,6 +94,7 @@ public class DpmProject {
 		}
 		
 		//nav.setFloat();
+		attack();
 
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);
@@ -141,7 +142,7 @@ public class DpmProject {
 		}
 	}
 	
-	private void attack() {
+	private static void attack() {
 		completeCourse(Utility.pointToDistance(b), Utility.pointToDistance(new int[] {1,1}) );
 		nav.turnTo(90.0,true);
 		launchMotor.rotate(90); //Change this line so that it calls the fire method in the launcher class

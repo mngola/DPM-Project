@@ -20,36 +20,38 @@ public class Display extends Thread implements DisplayInterface  {
 		
 	// run method
 	public void run(){
+		t.clear();
+		System.out.flush();
+		displayOdometer();
+//		//Clear the display
+//			t.clear();
+//		
+//		// ask the user what display he wants
+//					t.drawString("< Main | Local >", 0, 0);
+//					t.drawString("  Menu |        ", 0, 1);
+//					t.drawString("    Odometer    ", 0, 2);
+//					t.drawString("       |        ", 0, 3);
+//					t.drawString("       |        ", 0, 4);
+//		
+//		//Wait for the result
+//		buttonChoice = Button.waitForAnyPress();
 		
-		//Clear the display
-			t.clear();
-		
-		// ask the user what display he wants
-					t.drawString("< Main | Local >", 0, 0);
-					t.drawString("  Menu |        ", 0, 1);
-					t.drawString("    Odometer    ", 0, 2);
-					t.drawString("       |        ", 0, 3);
-					t.drawString("       |        ", 0, 4);
-		
-		//Wait for the result
-		buttonChoice = Button.waitForAnyPress();
-		
-		//Clear the display
-				t.clear();
-		
-		switch(buttonChoice){
-			
-			//Main Menu
-			case Button.ID_LEFT: displayMainMenu();
-								break;
-			//Localization
-			case Button.ID_RIGHT: displayLocalization();
-								break;
-			//Odometer
-			case Button.ID_ENTER: displayOdometer();
-								break;
-			default: break;
-		}
+//		//Clear the display
+//				t.clear();
+//		
+//		switch(buttonChoice){
+//			
+//			//Main Menu
+//			case Button.ID_LEFT: displayMainMenu();
+//								break;
+//			//Localization
+//			case Button.ID_RIGHT: displayLocalization();
+//								break;
+//			//Odometer
+//			case Button.ID_ENTER: displayOdometer();
+//								break;
+//			default: break;
+//		}
 		
 		
 	}

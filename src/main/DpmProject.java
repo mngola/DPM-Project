@@ -6,6 +6,7 @@ import localization.USLocalizer;
 import localization.USLocalizer.LocalizationType;
 import launcher.Launcher;
 import lejos.hardware.Button;
+import lejos.hardware.Sound;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
@@ -15,6 +16,7 @@ import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 import odometry.Odometer;
 import polling.USPoller;
+import utility.Utility;
 import wifi.WifiConnection;
 
 import java.util.Map;
@@ -31,10 +33,21 @@ public class DpmProject {
 	private static final Port usPort = LocalEV3.get().getPort("S1");
 	private static FullNavigator nav;
 	//Wifi
-	private static final String SERVER_IP = "192.168.137.1";
+	private static final String SERVER_IP = "192.168.2.23";
 	private static final int TEAM_NUMBER = 8;
 	private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
 
+	//Wifi Data
+	private static int d1;
+	private static int[] w;
+	private static int[] b;
+	private static String orientation;
+	private static int corner;
+	
+	//Grid Details
+	private static int gridWidth = 4;
+	private static int gridHeight = 12;
+	
 	public static void main(String[] args) {
 		//Instaniate objects
 
@@ -55,23 +68,32 @@ public class DpmProject {
 		odometer.start();
 		nav.start();
 		launch.start();
+		
+		
+		
+		
+		wifiPrint();
 		print.start();
 		
-		//wifiPrint();
-		//usl.doLocalization();
-		//nav.turnTo(0.0, true);
-		//odometer.setPosition(new double[] { 0.0, 0.0, 0.0 }, new boolean[] { true, true, true });
-		launchMotor.setAcceleration(9000);
-		launchMotor.setSpeed(800);
-		launchMotor.rotate(200);
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		usl.doLocalization();
+		nav.travelTo(9.0, 9.0);
+		nav.turnTo(0.0, true);
+		switch(corner) {
+			case 1:
+				odometer.setPosition(new double[] { 0.0, 0.0, 0.0 }, new boolean[] { true, true, true });
+				break;
+			case 2:
+				odometer.setPosition(new double[] { (gridWidth-2)*30.0, 0.0, 0.0 }, new boolean[] { true, true, true });
+				break;
+			case 3:
+				odometer.setPosition(new double[] { (gridWidth-2)*30.0, (gridHeight-1)*30.0, 0.0 }, new boolean[] { true, true, true });
+				break;
+			case 4:
+				odometer.setPosition(new double[] { 0.0, (gridHeight-1)*30.0, 0.0 }, new boolean[] { true, true, true });
+				break;
 		}
-		launchMotor.rotate(-170);
+		
 		//nav.setFloat();
-		//completeCourse();
 
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);
@@ -88,33 +110,49 @@ public class DpmProject {
 			// Example 1: Print out all received data
 			System.out.println("Map:\n" + data);
 
-			// Example 2 : Print out specific values
-			int fwdTeam = ((Long) data.get("FWD_TEAM")).intValue();
-			System.out.println("Forward Team: " + fwdTeam);
-
-			int w1 = ((Long) data.get("w1")).intValue();
-			System.out.println("Defender zone size w1: " + w1);
-
-			// Example 3: Compare value
-			String orientation = (String) data.get("omega");
-			if (orientation.equals("N")) {
-				System.out.println("Orientation is North");
+			// Get the d1 value  
+			d1 = ((Long) data.get("d1")).intValue();
+			int[] defence = {((Long) data.get("w1")).intValue(),((Long) data.get("w2")).intValue()};
+			w = defence;
+			int[] balls = {((Long) data.get("bx")).intValue(),((Long) data.get("by")).intValue()};
+			b = balls;
+			orientation = (String) data.get("omega");
+			if(((Long) data.get("FWD_TEAM")).intValue() == TEAM_NUMBER) 
+			{
+				corner = ((Long) data.get("FWD_CORNER")).intValue();
+			} 
+			else 
+			{
+				corner = ((Long) data.get("DEF_CORNER")).intValue();
 			}
-			else {
-				System.out.println("Orientation is not North");
-			}
-
+			System.out.println("d1: " + d1 );
+			System.out.println("w1: " + w[0] + " w2: " + w[1]);
+			System.out.println("bx: " + b[0] + " by: " + b[1]);
+			System.out.println("Orientation: " + orientation);
+			System.out.println("Starting Corner: " + corner);
+			System.out.println("                              ");
+			System.out.println("                              ");
+			System.out.println("                              ");
+			System.out.println("                              ");
+			System.out.println("                              ");
+			System.out.println("                              ");
 		} catch (Exception e) {
 			System.err.println("Error: " + e.getMessage());
 		}
 	}
+	
+	private void attack() {
+		completeCourse(Utility.pointToDistance(b), Utility.pointToDistance(new int[] {1,1}) );
+		nav.turnTo(90.0,true);
+		launchMotor.rotate(90); //Change this line so that it calls the fire method in the launcher class
+	}
+	
+	private static void completeCourse(int[] p1,int[] p2) {
 
-	private static void completeCourse() {
-
-		int[][] waypoints = {{0,60},{0,0}};
+		int[][] waypoints = {p1,p2};
 
 		for(int[] point : waypoints){
-			nav.travelTo(point[0],point[1],true);
+			nav.travelTo(point[0],point[1],false);
 			while(nav.isTravelling()){
 				try {
 					Thread.sleep(500);

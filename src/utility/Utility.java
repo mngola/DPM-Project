@@ -38,6 +38,14 @@ public class Utility {
 			return d - 360.0;
 	}
 
+	public static int[] pointToDistance(int[] point)
+	{
+		int[] d = new int[2];
+		d[0] = point[0] * 30;
+		d[1] = point[1] * 30;
+		return d;
+	}
+
 	/**
 	 * Converts distance to US sensor rotations
 	 */

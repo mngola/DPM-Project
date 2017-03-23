@@ -67,8 +67,8 @@ public class Navigation extends Thread implements NavigationInterface {
 	 * Stop the motors jointly
 	 */
 	public void stopMotors() {
-		leftMotor.stop();
-		rightMotor.stop();
+		leftMotor.stop(true);
+		rightMotor.stop(false);
 	}
 	
 	/*
@@ -122,8 +122,8 @@ public class Navigation extends Thread implements NavigationInterface {
 	 */
 	public void turnTo(double angle, boolean stop) {
 
-		leftMotor.setSpeed(Constants.SLOW_SPEED); //set the speeds at rotating speed
-		rightMotor.setSpeed(Constants.SLOW_SPEED);
+		leftMotor.setSpeed(Constants.ROTATION_SPEED); //set the speeds at rotating speed
+		rightMotor.setSpeed(Constants.ROTATION_SPEED);
 		double correctionangle = odometer.getTheta() - angle;  //The difference between the wanted value and our value
 		//To make sure we never go the longer way around
 		if(correctionangle<-180){

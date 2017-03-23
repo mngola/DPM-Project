@@ -20,6 +20,14 @@ public class Launcher extends Thread implements LauncherInterface {
 
 	public void fire(double targetX, double targetY) {
 		
+		motor.flt();
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		//Calculate the distance
 		double distance = Math.pow(Math.pow(targetY-odom.getY(), 2) + Math.pow(targetX-odom.getX(), 2),1/2);
 		
@@ -44,6 +52,8 @@ public class Launcher extends Thread implements LauncherInterface {
 		motor.setAcceleration(1000);
 		motor.setSpeed(Constants.ROTATION_SPEED);
 		motor.rotate(-180);
+		
+		motor.flt();
 		
 		}
 

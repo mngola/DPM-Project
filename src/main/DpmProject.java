@@ -29,14 +29,17 @@ public class DpmProject {
 
 	//Motors
 	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
-	private static final EV3LargeRegulatedMotor launchMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
+	private static final EV3LargeRegulatedMotor launchMotor1 = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
+	private static final EV3LargeRegulatedMotor launchMotor2 = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	//Sensors
 	private static final Port usPort = LocalEV3.get().getPort("S1");
 	private static final Port colorPort = LocalEV3.get().getPort("S2");	
 	private static FullNavigator nav;
+	private static Launcher launch;
+	
 	//Wifi
-	private static final String SERVER_IP = "192.168.2.7";
+	private static final String SERVER_IP = "192.168.2.10";
 	private static final int TEAM_NUMBER = 8;
 	private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
 
@@ -46,13 +49,13 @@ public class DpmProject {
 	private static int[] b;
 	private static String orientation;
 	private static int corner;
-	
+
 	//Grid Details
 	private static int gridWidth = 4;
 	private static int gridHeight = 12;
-	
-	private static double tilelength = 30.48;
-	
+
+	private static double tileLength = 30.48;
+
 	public static void main(String[] args) {
 		//Instaniate objects
 
@@ -67,24 +70,46 @@ public class DpmProject {
 
 		Odometer odometer = new Odometer(leftMotor, rightMotor);
 		USPoller usPoller = new USPoller(usDistance);
-		
+
 		nav = new FullNavigator(odometer,usPoller);
 		LightLocalizer lightloc = new LightLocalizer(odometer, colorValue, colorData, nav,leftMotor,rightMotor);
 		USLocalizer usl = new USLocalizer(odometer, usPoller, LocalizationType.FALLING_EDGE, nav, leftMotor, rightMotor);
-		Launcher launch = new Launcher(odometer,nav,launchMotor);
+		launch = new Launcher(odometer,nav,launchMotor1,launchMotor2);
 		Display print = new Display(odometer);
 
 		usPoller.start();
 		odometer.start();
-	
+		nav.start();
+		launch.start();
+		//wifiPrint();
+		print.start();
+
+		launch.fire(0, 120);
 		usl.doLocalization();
 		lightloc.doTransition();
 		lightloc.doLocalization();
-		nav.travelTo(0, tilelength);
-		nav.travelTo(2*tilelength, 4*tilelength);
-		nav.travelTo(0,0);
-		nav.turnTo(0, true);
 		
+		switch(corner) {
+			case 1:
+				odometer.setPosition(new double[] { 0.0, 0.0, 0.0 }, new boolean[] { true, true, true });
+				break;
+			case 2:
+				odometer.setPosition(new double[] { (gridWidth-2)*tileLength, 0.0, 0.0 }, new boolean[] { true, true, true });
+				break;
+			case 3:
+				odometer.setPosition(new double[] { (gridWidth-2)*tileLength, (gridHeight-2)*tileLength, 0.0 }, new boolean[] { true, true, true });
+				break;
+			case 4:
+				odometer.setPosition(new double[] { 0.0, (gridHeight-2)*tileLength, 0.0 }, new boolean[] { true, true, true });
+				break;
+		}
+		
+		attack();
+		//nav.travelTo(0, tilelength);
+		//nav.travelTo(2*tilelength, 4*tilelength);
+		//nav.travelTo(0,0);
+		//nav.turnTo(0, true);
+
 
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);
@@ -131,13 +156,13 @@ public class DpmProject {
 			System.err.println("Error: " + e.getMessage());
 		}
 	}
-	
+
 	private static void attack() {
 		completeCourse(Utility.pointToDistance(b), Utility.pointToDistance(new int[] {1,1}) );
 		nav.turnTo(90.0,true);
-		launchMotor.rotate(90); //Change this line so that it calls the fire method in the launcher class
+		launch.fire(30, 200); //Change this line so that it calls the fire method in the launcher class
 	}
-	
+
 	private static void completeCourse(int[] p1,int[] p2) {
 
 		int[][] waypoints = {p1,p2};

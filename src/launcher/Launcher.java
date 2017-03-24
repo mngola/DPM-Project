@@ -1,6 +1,7 @@
 package launcher;
 
 import constants.Constants;
+import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import navigation.Navigation;
 import odometry.Odometer;
@@ -11,6 +12,7 @@ public class Launcher extends Thread implements LauncherInterface {
 	private static Navigation navi;
 	private EV3LargeRegulatedMotor lm1;
 	private EV3LargeRegulatedMotor lm2;
+	int ANGLE_TURN = 100;
 
 	//Constructor
 	public Launcher(Odometer odom, Navigation navi, EV3LargeRegulatedMotor launchmotor1, EV3LargeRegulatedMotor launchmotor2){
@@ -45,21 +47,49 @@ public class Launcher extends Thread implements LauncherInterface {
 		lm2.setSpeed((int) (Constants.LAUNCHER_CONSTANT*distance));
 		
 		
+		
 		//Shoot the ball
-		lm1.rotate(-180,true);
-		lm2.rotate(-180,false);
+		lm1.rotate(-ANGLE_TURN,true);
+		lm2.rotate(-ANGLE_TURN,false);
+		
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		//Rotate the ball back
 		lm1.setAcceleration(1000);
-		lm1.setSpeed(Constants.ROTATION_SPEED);
+		lm1.setSpeed(20);
 		lm2.setAcceleration(1000);
-		lm2.setSpeed(Constants.ROTATION_SPEED);
-		lm1.rotate(180);
-		lm2.rotate(180);
+		lm2.setSpeed(20);
+		
+		lm1.rotate(ANGLE_TURN,true);
+		lm2.rotate(ANGLE_TURN,false);
 		
 		lm1.flt();
 		lm2.flt();
 		
 		}
+	
+	public void dropBall(){
+		lm1.setSpeed(50);
+		lm2.setSpeed(50);
+		lm1.rotate(5,true);
+		lm2.rotate(5,false);
+		
+		lm1.flt();
+		lm2.flt();
+		Sound.beep();
+		
+		try {
+			Thread.sleep(4000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 
 }

@@ -36,12 +36,12 @@ public class DpmProject {
 	//Sensors
 	private static final Port usPort = LocalEV3.get().getPort("S1");
 	private static final Port colorPort = LocalEV3.get().getPort("S2");	
-	private static final Port gyroPort = LocalEV3.get().getPort("S3");
+	//private static final Port gyroPort = LocalEV3.get().getPort("S3");
 	private static FullNavigator nav;
 	private static Launcher launch;
 	
 	//Wifi
-	private static final String SERVER_IP = "192.168.2.13";
+	private static final String SERVER_IP = "192.168.2.8";
 	private static final int TEAM_NUMBER = 8;
 	private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
 
@@ -69,8 +69,8 @@ public class DpmProject {
 		SensorModes colorSensor = new EV3ColorSensor(colorPort);
 		SampleProvider colorValue = colorSensor.getMode("Red");		
 		float[] colorData = new float[colorValue.sampleSize()];	
-		SensorModes gyroSensor = new EV3GyroSensor(gyroPort);
-		SampleProvider gyroSamples = gyroSensor.getMode("Angle");
+		//SensorModes gyroSensor = new EV3GyroSensor(gyroPort);
+		//SampleProvider gyroSamples = gyroSensor.getMode("Angle");
 		
 		Odometer odometer = new Odometer(leftMotor, rightMotor);
 		USPoller usPoller = new USPoller(usDistance);
@@ -125,6 +125,7 @@ public class DpmProject {
 		try {
 			@SuppressWarnings("rawtypes")
 			Map data = conn.getData();
+			Sound.beep();
 
 			// Example 1: Print out all received data
 			System.out.println("Map:\n" + data);
@@ -162,7 +163,7 @@ public class DpmProject {
 
 	private static void attack() {
 		completeCourse(Utility.pointToDistance(b), Utility.pointToDistance(new int[] {targetX,(targetY-d1)}) );
-		launch.fire(targetX, targetY); //Change this line so that it calls the fire method in the launcher class
+		launch.fire(targetX*tileLength, targetY*tileLength); //Change this line so that it calls the fire method in the launcher class
 	}
 
 	private static void completeCourse(int[] p1,int[] p2) {

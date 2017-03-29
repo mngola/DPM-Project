@@ -24,8 +24,8 @@ public class Launcher extends Thread implements LauncherInterface {
 
 	public void fire(double targetX, double targetY) {
 		
-		lm1.flt();
-		lm2.flt();
+		lm1.rotate(10,true);
+		lm2.rotate(10,false);
 		
 		//Calculate the distance
 		double distance = Math.pow(Math.pow(targetY-odom.getY(), 2) + Math.pow(targetX-odom.getX(), 2),0.5d);
@@ -42,9 +42,11 @@ public class Launcher extends Thread implements LauncherInterface {
 		
 		//Set the speed and acceleration
 		lm1.setAcceleration(Constants.ACCELERATION);
-		lm1.setSpeed((int) (Constants.LAUNCHER_CONSTANT*distance));
+		lm1.setSpeed(Constants.LAUNCHER_SPEED);
 		lm2.setAcceleration(Constants.ACCELERATION);
-		lm2.setSpeed((int) (Constants.LAUNCHER_CONSTANT*distance));
+		lm2.setSpeed(Constants.LAUNCHER_SPEED);
+		
+		//27-32-25
 		
 		
 		
@@ -52,29 +54,30 @@ public class Launcher extends Thread implements LauncherInterface {
 		lm1.rotate(-ANGLE_TURN,true);
 		lm2.rotate(-ANGLE_TURN,false);
 		
+
 		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		lm1.setSpeed(100);
+		lm2.setSpeed(100);
 		
-		//Rotate the ball back
-		lm1.setAcceleration(1000);
-		lm1.setSpeed(20);
-		lm2.setAcceleration(1000);
-		lm2.setSpeed(20);
+		lm1.rotate(ANGLE_TURN+15,true);
+		lm2.rotate(ANGLE_TURN+15,false);
 		
-		lm1.rotate(ANGLE_TURN,true);
-		lm2.rotate(ANGLE_TURN,false);
-		
-		lm1.flt();
-		lm2.flt();
+//		//Rotate the ball back
+//		lm1.setAcceleration(1000);
+//		lm1.setSpeed(50);
+//		lm2.setAcceleration(1000);
+//		lm2.setSpeed(50);
+//		
+//		lm1.rotate(ANGLE_TURN,true);
+//		lm2.rotate(ANGLE_TURN,false);
+//		
+		lm1.stop();
+		lm2.stop();
 		
 		}
 	
-	public void dropBall(){
+	
+	public void dropClaw(){
 		lm1.setSpeed(50);
 		lm2.setSpeed(50);
 		lm1.rotate(5,true);
@@ -82,7 +85,6 @@ public class Launcher extends Thread implements LauncherInterface {
 		
 		lm1.flt();
 		lm2.flt();
-		Sound.beep();
 		
 		try {
 			Thread.sleep(4000);

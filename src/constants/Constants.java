@@ -22,10 +22,13 @@ public class Constants {
 
 	public static final int FAST_SPEED = 200;
 	public static final int SLOW_SPEED = 100;
-	public static final int ACCELERATION = 4000;
+	public static final int ACCELERATION = 20000;
 	public static final int ROTATION_SPEED = 200;
-	public static final int LAUNCHER_CONSTANT = 5;
+	public static final int LAUNCHER_SPEED = 600;
 
 	public static final double LOW_NOISE = 101.0;
 	public static final double UPPER_NOISE = 101.0;
+	
+	public static double BALLDROP_DISTANCE = 10;
+	public static double CLAWTOCENTER_DISTANCE = 10;
 }

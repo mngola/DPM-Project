@@ -13,10 +13,12 @@ import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.EV3GyroSensor;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 import odometry.Odometer;
+import polling.GyroPoller;
 import polling.USPoller;
 import utility.Utility;
 import wifi.WifiConnection;
@@ -34,7 +36,8 @@ public class DpmProject {
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	//Sensors
 	private static final Port usPort = LocalEV3.get().getPort("S1");
-	private static final Port colorPort = LocalEV3.get().getPort("S2");	
+	private static final Port colorPort = LocalEV3.get().getPort("S2");
+	private static final Port gyroPort = LocalEV3.get().getPort("S3");
 	private static FullNavigator nav;
 	private static Launcher launch;
 	
@@ -53,7 +56,8 @@ public class DpmProject {
 	//Grid Details
 	private static int gridWidth = 4;
 	private static int gridHeight = 12;
-
+	private static int targetX = 5;
+	private static int targetY = 6;
 	private static double tileLength = 30.48;
 
 	public static void main(String[] args) {
@@ -66,11 +70,14 @@ public class DpmProject {
 		SensorModes colorSensor = new EV3ColorSensor(colorPort);
 		SampleProvider colorValue = colorSensor.getMode("Red");		
 		float[] colorData = new float[colorValue.sampleSize()];	
+		EV3GyroSensor gyroSensor = new EV3GyroSensor(gyroPort);
+		SampleProvider gyroSamples = gyroSensor.getMode("Angle");
 
-
-		Odometer odometer = new Odometer(leftMotor, rightMotor);
+		GyroPoller gPoller = new GyroPoller(gyroSamples);
+		Odometer odometer = new Odometer(leftMotor, rightMotor,gPoller);
 		USPoller usPoller = new USPoller(usDistance);
-
+		
+		
 		nav = new FullNavigator(odometer,usPoller);
 		LightLocalizer lightloc = new LightLocalizer(odometer, colorValue, colorData, nav,leftMotor,rightMotor);
 		USLocalizer usl = new USLocalizer(odometer, usPoller, LocalizationType.FALLING_EDGE, nav, leftMotor, rightMotor);
@@ -81,10 +88,9 @@ public class DpmProject {
 		odometer.start();
 		nav.start();
 		launch.start();
-		//wifiPrint();
+		wifiPrint();
 		print.start();
 
-		launch.fire(0, 120);
 		usl.doLocalization();
 		lightloc.doTransition();
 		lightloc.doLocalization();
@@ -103,7 +109,8 @@ public class DpmProject {
 				odometer.setPosition(new double[] { 0.0, (gridHeight-2)*tileLength, 0.0 }, new boolean[] { true, true, true });
 				break;
 		}
-		
+		gyroSensor.reset();
+		gPoller.start();
 		attack();
 		//nav.travelTo(0, tilelength);
 		//nav.travelTo(2*tilelength, 4*tilelength);
@@ -122,7 +129,7 @@ public class DpmProject {
 		try {
 			@SuppressWarnings("rawtypes")
 			Map data = conn.getData();
-
+			Sound.beep();
 			// Example 1: Print out all received data
 			System.out.println("Map:\n" + data);
 
@@ -159,10 +166,9 @@ public class DpmProject {
 
 	private static void attack() {
 		completeCourse(Utility.pointToDistance(b), Utility.pointToDistance(new int[] {1,1}) );
-		nav.turnTo(90.0,true);
-		launch.fire(30, 200); //Change this line so that it calls the fire method in the launcher class
+		launch.fire(targetX*tileLength, targetY*tileLength); //Change this line so that it calls the fire method in the launcher class	}
 	}
-
+	
 	private static void completeCourse(int[] p1,int[] p2) {
 
 		int[][] waypoints = {p1,p2};

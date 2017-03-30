@@ -2,7 +2,8 @@ package constants;
 
 public class Constants {
 	public static final long ODOMETER_PERIOD = 25;
-	public static final long POLLER_PERIOD = 30;
+	public static final long USPOLLER_PERIOD = 30;
+	public static final long GPOLLER_PERIOD = 10;
 	public static final long CORRECTION_PERIOD = 10;
 	public static final long DISPLAY_PERIOD = 250;
 	public static final long NAV_PERIOD = 50;

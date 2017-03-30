@@ -1,5 +1,6 @@
 package odometry;
 
+import polling.GyroPoller;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import constants.Constants;
 import utility.Utility;
@@ -8,10 +9,11 @@ public class Odometer extends Thread implements OdometerInterface {
 	// robot position
 	private double x, y, theta;
 	private EV3LargeRegulatedMotor leftMotor, rightMotor;
+	private GyroPoller gyro;
 	private double[] oldDH, dDH;
 
 	// default constructor
-	public Odometer(EV3LargeRegulatedMotor lm,EV3LargeRegulatedMotor rm) {
+	public Odometer(EV3LargeRegulatedMotor lm,EV3LargeRegulatedMotor rm, GyroPoller g) {
 		leftMotor = lm;
 		rightMotor = rm;
 		x = 0.0;
@@ -19,6 +21,7 @@ public class Odometer extends Thread implements OdometerInterface {
 		theta = 90.0;
 		oldDH = new double[2];
 		dDH = new double[2];
+		gyro = g;
 	}
 
 	/*
@@ -49,7 +52,7 @@ public class Odometer extends Thread implements OdometerInterface {
 				 * Variables are updated in the synchronization block 
 				 */
 
-				theta += dDH[1];
+				theta = gyro.getAngle();
 				theta = Utility.fixDegAngle(theta);
 
 				x += dDH[0] * Math.cos(Math.toRadians(theta));

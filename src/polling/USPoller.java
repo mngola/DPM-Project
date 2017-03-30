@@ -22,7 +22,7 @@ public class USPoller extends Thread implements PollerInterface  {
 			offsetFilterDistance();
 			//sensor.fetchSample(sensorData, 0);
 			//distance = (int) (sensorData[0]*100.0);
-			try {Thread.sleep(Constants.POLLER_PERIOD);} catch(Exception e) {}
+			try {Thread.sleep(Constants.USPOLLER_PERIOD);} catch(Exception e) {}
 		}
 	}
 	

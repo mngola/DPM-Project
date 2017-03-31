@@ -22,7 +22,7 @@ public class Navigation extends Thread implements NavigationInterface {
 	}
 
 	public void run() {
-		
+
 	}
 	/*
 	 * Functions to set the motor speeds jointly
@@ -70,28 +70,51 @@ public class Navigation extends Thread implements NavigationInterface {
 		leftMotor.stop(true);
 		rightMotor.stop(false);
 	}
-	
+
 	/*
 	 * TravelTo function which takes as arguments the x and y position in cm Will travel to designated position, while
 	 * constantly updating it's heading
 	 */
 	public void travelTo(double x, double y) {
 		double minAng;
-		minAng = getDestAngle(x,y);
-		double dx = x - odometer.getX(); //The change we want in x and y
-		double dy = y - odometer.getY();
-		double distance = Math.sqrt(dx*dx+dy*dy);
-		turnTo(minAng, false);
-		leftMotor.setSpeed(Constants.FAST_SPEED);//set the speeds
-		rightMotor.setSpeed(Constants.FAST_SPEED);
-		leftMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance), true); //Cover the distance to get to the next point
-		rightMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance), false);
+		while (Math.abs(x - odometer.getX()) > Constants.CM_ERR || Math.abs(y - odometer.getY()) > Constants.CM_ERR) {
+			minAng = Math.toDegrees((Math.atan2(y - odometer.getY(), x - odometer.getX())));
+			if (minAng < 0)
+				minAng += 360.0;
+			this.turnTo(minAng, false);
+			this.setSpeeds(Constants.FAST_SPEED, Constants.FAST_SPEED);
+		}
+		this.setSpeeds(0, 0);
+	}
+//	public void travelTo(double x, double y) {
+//		double minAng;
+//		minAng = getDestAngle(x,y);
+//		double ogx = x;
+//		double ogy = y;
+//		double dx = x - odometer.getX(); //The change we want in x and y
+//		double dy = y - odometer.getY();
+//		double distance = Math.sqrt(dx*dx+dy*dy);
+//		turnTo(minAng, false);
 //		while (!checkIfDone(x,y)) {
 //			setSpeeds(Constants.FAST_SPEED, Constants.FAST_SPEED);
 //		}
-		stopMotors();
-	}
-	
+////		x = 5.0 * Math.cos(minAng);
+////		y = 5.0 * Math.sin(minAng);
+////		//leftMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance), true); //Cover the distance to get to the next point
+////		//rightMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance), false);
+////		for(int i=0; i<rep;i++){
+////			while (!checkIfDone(x,y)) {
+////				setSpeeds(Constants.FAST_SPEED, Constants.FAST_SPEED);
+////			}
+////			x += 5.0 * Math.cos(minAng);
+////			y += 5.0 * Math.sin(minAng);
+////		}
+////		while (!checkIfDone(ogx,ogy)) {
+////			setSpeeds(Constants.FAST_SPEED, Constants.FAST_SPEED);
+////		}
+//		stopMotors();
+//	}
+
 	/*
 	 * Check if the robot has reached its destination, within the CM_ERR
 	 */
@@ -99,14 +122,14 @@ public class Navigation extends Thread implements NavigationInterface {
 		return Math.abs(x - odometer.getX()) < Constants.CM_ERR
 				&& Math.abs(y - odometer.getY()) < Constants.CM_ERR;
 	}
-	
+
 	/*
 	 * Check if the robot is facing the correct direction, within the DEG_ERR
 	 */
 	protected boolean facingDest(double angle) {
 		return Math.abs(angle - odometer.getTheta()) < Constants.DEG_ERR;
 	}
-	
+
 	// Compute the destination angle 
 	protected double getDestAngle(double x, double y) {
 		double minAng = Math.toDegrees((Math.atan2(y - odometer.getY(), x - odometer.getX())));
@@ -115,7 +138,7 @@ public class Navigation extends Thread implements NavigationInterface {
 		}
 		return minAng;
 	}
-	
+
 	/*
 	 * TurnTo function which takes an angle and boolean as arguments The boolean controls whether or not to stop the
 	 * motors when the turn is completed
@@ -132,31 +155,31 @@ public class Navigation extends Thread implements NavigationInterface {
 		else if(correctionangle>180){
 			correctionangle -= 360;
 		}
-		leftMotor.rotate(Utility.convertAngle(Constants.WHEEL_RADIUS, Constants.TRACK, correctionangle), true);
-		rightMotor.rotate(-Utility.convertAngle(Constants.WHEEL_RADIUS, Constants.TRACK, correctionangle), false);
-		
-//		double error = angle - odometer.getTheta();
-//
-//		while (Math.abs(error) > Constants.DEG_ERR) {
-//
-//			error = angle - odometer.getTheta();
-//			
-//			if (error < -180.0) {
-//				setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
-//			} else if (error < 0.0) {
-//				setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
-//			} else if (error > 180.0) {
-//				setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
-//			} else {
-//				setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
-//			}
-//		}
+		//leftMotor.rotate(Utility.convertAngle(Constants.WHEEL_RADIUS, Constants.TRACK, correctionangle), true);
+		//rightMotor.rotate(-Utility.convertAngle(Constants.WHEEL_RADIUS, Constants.TRACK, correctionangle), false);
+
+		double error = angle - odometer.getTheta();
+
+		while (Math.abs(error) > Constants.DEG_ERR) {
+
+			error = angle - odometer.getTheta();
+
+			if (error < -180.0) {
+				setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
+			} else if (error < 0.0) {
+				setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
+			} else if (error > 180.0) {
+				setSpeeds(Constants.SLOW_SPEED, -Constants.SLOW_SPEED);
+			} else {
+				setSpeeds(-Constants.SLOW_SPEED, Constants.SLOW_SPEED);
+			}
+		}
 
 		if (stop) {
 			stopMotors();
 		}
 	}
-	
+
 	/*
 	 * Go foward a set distance in cm
 	 */

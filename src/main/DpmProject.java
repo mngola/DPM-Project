@@ -18,6 +18,7 @@ import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
 import odometry.Odometer;
+import odometry.OdometerCorrection;
 import polling.GyroPoller;
 import polling.USPoller;
 import utility.Utility;
@@ -35,14 +36,15 @@ public class DpmProject {
 	private static final EV3LargeRegulatedMotor launchMotor2 = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
 	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	//Sensors
-	private static final Port usPort = LocalEV3.get().getPort("S1");
+	private static final Port usPort1 = LocalEV3.get().getPort("S1");
+	private static final Port usPort2 = LocalEV3.get().getPort("S4");
 	private static final Port colorPort = LocalEV3.get().getPort("S2");
 	private static final Port gyroPort = LocalEV3.get().getPort("S3");
 	private static FullNavigator nav;
 	private static Launcher launch;
 	
 	//Wifi
-	private static final String SERVER_IP = "192.168.2.10";
+	private static final String SERVER_IP = "192.168.2.7";
 	private static final int TEAM_NUMBER = 8;
 	private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
 
@@ -51,12 +53,12 @@ public class DpmProject {
 	private static int[] w;
 	private static int[] b;
 	private static String orientation;
-	private static int corner;
+	private static int corner=1;
 
 	//Grid Details
 	private static int gridWidth = 4;
-	private static int gridHeight = 12;
-	private static int targetX = 5;
+	private static int gridHeight = 4;
+	private static int targetX = 2;
 	private static int targetY = 6;
 	private static double tileLength = 30.48;
 
@@ -64,19 +66,23 @@ public class DpmProject {
 		//Instaniate objects
 
 		@SuppressWarnings("resource")
-		SensorModes usSensor = new EV3UltrasonicSensor(usPort);
-		SampleProvider usDistance = usSensor.getMode("Distance");
+		SensorModes usSensor1 = new EV3UltrasonicSensor(usPort1);
+		SampleProvider usDistance1 = usSensor1.getMode("Distance");
+		SensorModes usSensor2 = new EV3UltrasonicSensor(usPort2);
+		SampleProvider usDistance2 = usSensor2.getMode("Distance");
 		TextLCD t = LocalEV3.get().getTextLCD();	
 		SensorModes colorSensor = new EV3ColorSensor(colorPort);
 		SampleProvider colorValue = colorSensor.getMode("Red");		
 		float[] colorData = new float[colorValue.sampleSize()];	
 		EV3GyroSensor gyroSensor = new EV3GyroSensor(gyroPort);
 		SampleProvider gyroSamples = gyroSensor.getMode("Angle");
-
+		gyroSensor.reset();
+		
 		GyroPoller gPoller = new GyroPoller(gyroSamples);
 		Odometer odometer = new Odometer(leftMotor, rightMotor,gPoller);
-		USPoller usPoller = new USPoller(usDistance);
-		
+		USPoller usPoller = new USPoller(usDistance1,usDistance2);
+		OdometerCorrection odoCorr = new OdometerCorrection(odometer,colorValue, colorData);
+
 		
 		nav = new FullNavigator(odometer,usPoller);
 		LightLocalizer lightloc = new LightLocalizer(odometer, colorValue, colorData, nav,leftMotor,rightMotor);
@@ -84,37 +90,38 @@ public class DpmProject {
 		launch = new Launcher(odometer,nav,launchMotor1,launchMotor2);
 		Display print = new Display(odometer);
 
+		gPoller.start();
 		usPoller.start();
 		odometer.start();
 		nav.start();
 		launch.start();
-		wifiPrint();
+		odoCorr.start();
+		//wifiPrint();
 		print.start();
+	
 
-		usl.doLocalization();
-		lightloc.doTransition();
-		lightloc.doLocalization();
+		//usl.doLocalization();
+		//lightloc.doTransition();
+		// lightloc.doLocalization();
 		
 		switch(corner) {
 			case 1:
 				odometer.setPosition(new double[] { 0.0, 0.0, 0.0 }, new boolean[] { true, true, true });
 				break;
 			case 2:
-				odometer.setPosition(new double[] { (gridWidth-2)*tileLength, 0.0, 0.0 }, new boolean[] { true, true, true });
+				odometer.setPosition(new double[] { (gridWidth-2)*tileLength, 0.0, 90.0 }, new boolean[] { true, true, true });
 				break;
 			case 3:
-				odometer.setPosition(new double[] { (gridWidth-2)*tileLength, (gridHeight-2)*tileLength, 0.0 }, new boolean[] { true, true, true });
+				odometer.setPosition(new double[] { (gridWidth-2)*tileLength, (gridHeight-2)*tileLength, 180.0 }, new boolean[] { true, true, true });
 				break;
 			case 4:
-				odometer.setPosition(new double[] { 0.0, (gridHeight-2)*tileLength, 0.0 }, new boolean[] { true, true, true });
+				odometer.setPosition(new double[] { 0.0, (gridHeight-2)*tileLength, 270.0 }, new boolean[] { true, true, true });
 				break;
 		}
-		gyroSensor.reset();
-		gPoller.start();
-		attack();
-		//nav.travelTo(0, tilelength);
-		//nav.travelTo(2*tilelength, 4*tilelength);
-		//nav.travelTo(0,0);
+		//attack();
+		//nav.travelTo(2);
+		nav.travelTo(6*tileLength, 1*tileLength);
+		///nav.travelTo(0,0);
 		//nav.turnTo(0, true);
 
 
@@ -165,7 +172,7 @@ public class DpmProject {
 	}
 
 	private static void attack() {
-		completeCourse(Utility.pointToDistance(b), Utility.pointToDistance(new int[] {1,1}) );
+		completeCourse(Utility.pointToDistance(b), Utility.pointToDistance(new int[] {targetX,(targetY-d1)}) );
 		launch.fire(targetX*tileLength, targetY*tileLength); //Change this line so that it calls the fire method in the launcher class	}
 	}
 	

@@ -17,7 +17,7 @@ public class Constants {
 	public static final int BAND_CENTER = 15;
 	public static final int BANDWIDTH = 3;
 
-	public static final double LIGHT_SENSOR_DISTANCE = 12.2; 
+	public static final double LIGHT_SENSOR_DISTANCE = 13.5; 
 	public static final double UPPER_LIGHT = 0.45;
 	public static final double LOWER_LIGHT = 0.4;
 

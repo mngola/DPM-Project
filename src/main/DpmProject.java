@@ -31,7 +31,6 @@ import java.util.Map;
 import constants.Constants;
 import behaviour.BehaviorAvoid;
 import behaviour.BehaviorMove;
-import behaviour.BehaviorRobot;
 import display.Display;
 
 public class DpmProject {
@@ -47,12 +46,12 @@ public class DpmProject {
 	private static final Port colorPort = LocalEV3.get().getPort("S2");
 	private static final Port gyroPort = LocalEV3.get().getPort("S3");
 	private static Navigation nav;
-	private static Launcher launch;
-	private static Odometer odometer;
+	public static Launcher launch;
+	public static Odometer odometer;
 	private static USLocalizer usl;
 	private static LightLocalizer lightloc;
 	private static SampleProvider colorSensor;
-	private static float[] colorData;
+	public static float[] colorData;
 
 	//Wifi
 	private static final String SERVER_IP = "192.168.2.11";
@@ -60,27 +59,26 @@ public class DpmProject {
 	private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
 
 	//Wifi Data
-	private static int d1;
+	public static int d1;
 	private static int[] w;
 	private static int[] b;
 	private static String orientation;
-	private static int corner=1;
+	private static int corner=2;
 	private static boolean attack=true;
 
 	//Grid Details
-	private static int gridWidth = 8;
-	private static int gridHeight = 12;
-	private static int targetX = 3;
-	private static int targetY = 11;
-	private static double tileLength = 30.48;
+	public static int gridWidth = 8;
+	public static int gridHeight = 8;
+	public static int targetX = 4;
+	public static int targetY = 7;
+	public static double tileLength = 30.48;
 	static int NUMBER_SHOT = 0;
 	static double PositionforDisp[] = new double [3];
-	private static SensorMode colorValue;
+	public static SensorMode colorValue;
 
 
 	public static void main(String[] args) {
 		//Instaniate objects
-
 		@SuppressWarnings("resource")
 		SensorModes usSensor1 = new EV3UltrasonicSensor(usPort1);
 		SampleProvider usDistance1 = usSensor1.getMode("Distance");
@@ -92,7 +90,7 @@ public class DpmProject {
 		float[] colorData = new float[colorValue.sampleSize()];	
 		EV3GyroSensor gyroSensor = new EV3GyroSensor(gyroPort);
 		SampleProvider gyroSamples = gyroSensor.getMode("Angle");
-		gyroSensor.reset();
+		//gyroSensor.reset();
 
 		GyroPoller gPoller = new GyroPoller(gyroSamples);
 		Odometer odometer = new Odometer(leftMotor, rightMotor,gPoller);
@@ -100,7 +98,7 @@ public class DpmProject {
 		USPoller usPoller2 = new USPoller(usDistance2);
 		nav = new Navigation(odometer,usPoller1,usPoller2);
 		//OdometerCorrection odoCorr = new OdometerCorrection(odometer,colorValue, colorData);
-		
+
 		lightloc = new LightLocalizer(odometer, colorValue, colorData,leftMotor,rightMotor);
 		usl = new USLocalizer(odometer, usPoller1, LocalizationType.FALLING_EDGE, leftMotor, rightMotor);
 		launch = new Launcher(odometer,launchMotor1,launchMotor2);
@@ -114,10 +112,10 @@ public class DpmProject {
 		//odoCorr.start();
 		wifiPrint();
 		print.start();
-		
-		usl.doLocalization();
-		lightloc.doTransition();
-		lightloc.doLocalization();
+
+		//usl.doLocalization();
+		//lightloc.doTransition();
+		//lightloc.doLocalization();
 
 		gyroSensor.reset();
 		switch(corner) {
@@ -150,18 +148,18 @@ public class DpmProject {
 
 			//Find where the dispenser is
 			PositionforDisp = getDispenserPosition();
-///////////////////////////////////////////////////////////////
-//			// create each behavior
-//			Behavior move = new BehaviorMove();
-//			Behavior avoid = new BehaviorAvoid();		
-//
-//			// define an array (vector) of existing behaviors, sorted by priority
-//			Behavior behaviors[] = { move, avoid };
-//
-//			// add the behavior vector to a new arbitrator and start arbitration
-//			Arbitrator arbitrator = new Arbitrator(behaviors);
-//			arbitrator.go();
-////////////////////////////////////////////////////////////////
+			///////////////////////////////////////////////////////////////
+			// create each behavior
+			Behavior move = new BehaviorMove(PositionforDisp[0],PositionforDisp[1]);
+			Behavior avoid = new BehaviorAvoid();		
+
+			// define an array (vector) of existing behaviors, sorted by priority
+			Behavior behaviors[] = { move, avoid };
+
+			// add the behavior vector to a new arbitrator and start arbitration
+			Arbitrator arbitrator = new Arbitrator(behaviors);
+			arbitrator.go();
+			////////////////////////////////////////////////////////////////
 			/*Enter the while loop until the end which is basically these steps repeated over and over
 			 * 1-Go to the dispenser
 			 * 2-Pick up the ball
@@ -172,7 +170,7 @@ public class DpmProject {
 				//Go to the dispenser
 				Navigation.travelTo(PositionforDisp[0], PositionforDisp[1]);
 				//Find the dispenser
-				findDispenser(colorData,colorValue, odometer, nav);
+				findDispenser(colorData,colorValue, odometer);
 
 				//Pick up the ball
 				Navigation.travelTo(PositionforDisp[0], PositionforDisp[1]);
@@ -281,7 +279,7 @@ public class DpmProject {
 	/**
 	 * Makes a beep and then wait 3 seconds for the ball to drop
 	 */
-	private static void ballDrop(){
+	public static void ballDrop(){
 		Sound.beep();
 		try {
 			Thread.sleep(3000);
@@ -290,8 +288,8 @@ public class DpmProject {
 		}
 	}
 
-	private static void findDispenser(float[] colorData, SampleProvider colorSensor, Odometer odom, Navigation nav){
-		
+	public static void findDispenser(float[] colorData, SampleProvider colorSensor, Odometer odom){
+
 		launchMotor1.setSpeed(100);
 		launchMotor2.setSpeed(100);
 		launchMotor1.rotate(50,true);

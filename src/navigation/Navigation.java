@@ -15,7 +15,7 @@ public class Navigation {
 	private static  EV3LargeRegulatedMotor leftMotor, rightMotor;
 	private static boolean stop = false;
 	public static USPoller lPoller;
-	static USPoller rPoller;
+	public static USPoller rPoller;
 	static Behavior behaviors[];
 	static Arbitrator arbitrator;
 	public static boolean beginNav = false;
@@ -120,7 +120,7 @@ public class Navigation {
 	/*
 	 * Check if the robot has reached its destination, within the CM_ERR
 	 */
-	protected static boolean checkIfDone(double x, double y) {
+	public static boolean checkIfDone(double x, double y) {
 		return Math.abs(x - odometer.getX()) < Constants.CM_ERR
 				&& Math.abs(y - odometer.getY()) < Constants.CM_ERR;
 	}

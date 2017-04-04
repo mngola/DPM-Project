@@ -7,13 +7,14 @@ import lejos.robotics.filter.MedianFilter;
 import lejos.robotics.filter.OffsetCorrectionFilter;
 
 public class GyroPoller extends Thread {
-	private int angle;
+	private int angle, offset;
 	private SampleProvider sensor;
 	private float[] sensorData;
 	
 	public GyroPoller(SampleProvider us) {
 		sensor = us;
 		sensorData = new float[sensor.sampleSize()];
+		offset = 0;
 	}
 	
 	public void run() {
@@ -26,7 +27,11 @@ public class GyroPoller extends Thread {
 	}
 	
 	public int getAngle() {
-		return angle;
+		return angle + offset;
+	}
+	
+	public void setAngle(int value) {
+		offset = value;
 	}
 
 }

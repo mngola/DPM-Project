@@ -1,6 +1,5 @@
 package main;
 
-import navigation.FullNavigator;
 import navigation.Navigation;
 import localization.LightLocalizer;
 import localization.USLocalizer;
@@ -15,8 +14,11 @@ import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.EV3GyroSensor;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
+import lejos.hardware.sensor.SensorMode;
 import lejos.hardware.sensor.SensorModes;
 import lejos.robotics.SampleProvider;
+import lejos.robotics.subsumption.Arbitrator;
+import lejos.robotics.subsumption.Behavior;
 import odometry.Odometer;
 import odometry.OdometerCorrection;
 import polling.GyroPoller;
@@ -26,6 +28,10 @@ import wifi.WifiConnection;
 
 import java.util.Map;
 
+import constants.Constants;
+import behaviour.BehaviorAvoid;
+import behaviour.BehaviorMove;
+import behaviour.BehaviorRobot;
 import display.Display;
 
 public class DpmProject {
@@ -40,11 +46,16 @@ public class DpmProject {
 	private static final Port usPort2 = LocalEV3.get().getPort("S4");
 	private static final Port colorPort = LocalEV3.get().getPort("S2");
 	private static final Port gyroPort = LocalEV3.get().getPort("S3");
-	private static FullNavigator nav;
+	private static Navigation nav;
 	private static Launcher launch;
-	
+	private static Odometer odometer;
+	private static USLocalizer usl;
+	private static LightLocalizer lightloc;
+	private static SampleProvider colorSensor;
+	private static float[] colorData;
+
 	//Wifi
-	private static final String SERVER_IP = "192.168.2.7";
+	private static final String SERVER_IP = "192.168.2.11";
 	private static final int TEAM_NUMBER = 8;
 	private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
 
@@ -54,13 +65,18 @@ public class DpmProject {
 	private static int[] b;
 	private static String orientation;
 	private static int corner=1;
+	private static boolean attack=true;
 
 	//Grid Details
-	private static int gridWidth = 4;
-	private static int gridHeight = 4;
-	private static int targetX = 2;
-	private static int targetY = 6;
+	private static int gridWidth = 8;
+	private static int gridHeight = 12;
+	private static int targetX = 3;
+	private static int targetY = 11;
 	private static double tileLength = 30.48;
+	static int NUMBER_SHOT = 0;
+	static double PositionforDisp[] = new double [3];
+	private static SensorMode colorValue;
+
 
 	public static void main(String[] args) {
 		//Instaniate objects
@@ -77,50 +93,104 @@ public class DpmProject {
 		EV3GyroSensor gyroSensor = new EV3GyroSensor(gyroPort);
 		SampleProvider gyroSamples = gyroSensor.getMode("Angle");
 		gyroSensor.reset();
-		
+
 		GyroPoller gPoller = new GyroPoller(gyroSamples);
 		Odometer odometer = new Odometer(leftMotor, rightMotor,gPoller);
-		USPoller usPoller = new USPoller(usDistance1,usDistance2);
-		OdometerCorrection odoCorr = new OdometerCorrection(odometer,colorValue, colorData);
-
+		USPoller usPoller1 = new USPoller(usDistance1);
+		USPoller usPoller2 = new USPoller(usDistance2);
+		nav = new Navigation(odometer,usPoller1,usPoller2);
+		//OdometerCorrection odoCorr = new OdometerCorrection(odometer,colorValue, colorData);
 		
-		nav = new FullNavigator(odometer,usPoller);
-		LightLocalizer lightloc = new LightLocalizer(odometer, colorValue, colorData, nav,leftMotor,rightMotor);
-		USLocalizer usl = new USLocalizer(odometer, usPoller, LocalizationType.FALLING_EDGE, nav, leftMotor, rightMotor);
-		launch = new Launcher(odometer,nav,launchMotor1,launchMotor2);
+		lightloc = new LightLocalizer(odometer, colorValue, colorData,leftMotor,rightMotor);
+		usl = new USLocalizer(odometer, usPoller1, LocalizationType.FALLING_EDGE, leftMotor, rightMotor);
+		launch = new Launcher(odometer,launchMotor1,launchMotor2);
 		Display print = new Display(odometer);
 
 		gPoller.start();
-		usPoller.start();
+		usPoller1.start();
+		usPoller2.start();
 		odometer.start();
-		nav.start();
 		launch.start();
-		odoCorr.start();
-		//wifiPrint();
+		//odoCorr.start();
+		wifiPrint();
 		print.start();
-	
-
-		//usl.doLocalization();
-		//lightloc.doTransition();
-		// lightloc.doLocalization();
 		
+		usl.doLocalization();
+		lightloc.doTransition();
+		lightloc.doLocalization();
+
+		gyroSensor.reset();
 		switch(corner) {
-			case 1:
-				odometer.setPosition(new double[] { 0.0, 0.0, 0.0 }, new boolean[] { true, true, true });
-				break;
-			case 2:
-				odometer.setPosition(new double[] { (gridWidth-2)*tileLength, 0.0, 90.0 }, new boolean[] { true, true, true });
-				break;
-			case 3:
-				odometer.setPosition(new double[] { (gridWidth-2)*tileLength, (gridHeight-2)*tileLength, 180.0 }, new boolean[] { true, true, true });
-				break;
-			case 4:
-				odometer.setPosition(new double[] { 0.0, (gridHeight-2)*tileLength, 270.0 }, new boolean[] { true, true, true });
-				break;
+		case 1:
+			odometer.setPosition(new double[] { 0.0, 0.0, 0.0 }, new boolean[] { true, true, true });
+			break;
+		case 2:
+			odometer.setPosition(new double[] { (gridWidth-2)*tileLength, 0.0, 90.0 }, new boolean[] { true, true, true });
+			gPoller.setAngle(90);
+			break;
+		case 3:
+			odometer.setPosition(new double[] { (gridWidth-2)*tileLength, (gridHeight-2)*tileLength, 180.0 }, new boolean[] { true, true, true });
+			gPoller.setAngle(180);
+			break;
+		case 4:
+			odometer.setPosition(new double[] { 0.0, (gridHeight-2)*tileLength, 270.0 }, new boolean[] { true, true, true });
+			gPoller.setAngle(270);
+			break;
 		}
+		odometer.setGyroActive(true);
+
+		if(attack){
+			//Save the time
+			double timeStart = System.currentTimeMillis();
+
+
+			//Lock the launchers
+			launchMotor1.stop();
+			launchMotor2.stop();
+
+			//Find where the dispenser is
+			PositionforDisp = getDispenserPosition();
+///////////////////////////////////////////////////////////////
+//			// create each behavior
+//			Behavior move = new BehaviorMove();
+//			Behavior avoid = new BehaviorAvoid();		
+//
+//			// define an array (vector) of existing behaviors, sorted by priority
+//			Behavior behaviors[] = { move, avoid };
+//
+//			// add the behavior vector to a new arbitrator and start arbitration
+//			Arbitrator arbitrator = new Arbitrator(behaviors);
+//			arbitrator.go();
+////////////////////////////////////////////////////////////////
+			/*Enter the while loop until the end which is basically these steps repeated over and over
+			 * 1-Go to the dispenser
+			 * 2-Pick up the ball
+			 * 3-Go to the shooting zone
+			 * 4-Shoot the ball
+			 */
+			while(System.currentTimeMillis() - timeStart < 7*60*1000){
+				//Go to the dispenser
+				Navigation.travelTo(PositionforDisp[0], PositionforDisp[1]);
+				//Find the dispenser
+				findDispenser(colorData,colorValue, odometer, nav);
+
+				//Pick up the ball
+				Navigation.travelTo(PositionforDisp[0], PositionforDisp[1]);
+				Navigation.turnTo(PositionforDisp[2], true);
+				ballDrop();
+
+				//Go to the shooting zone
+				Navigation.travelTo(targetX*tileLength, (targetY-d1)*tileLength);
+				launch.fire(targetX*tileLength, targetY*tileLength, d1);
+			}
+		}
+		else{
+			//defend
+		}
+
 		//attack();
 		//nav.travelTo(2);
-		nav.travelTo(6*tileLength, 1*tileLength);
+		//nav.travelTo(6*tileLength, 1*tileLength);
 		///nav.travelTo(0,0);
 		//nav.turnTo(0, true);
 
@@ -150,10 +220,12 @@ public class DpmProject {
 			if(((Long) data.get("FWD_TEAM")).intValue() == TEAM_NUMBER) 
 			{
 				corner = ((Long) data.get("FWD_CORNER")).intValue();
+				attack = true;
 			} 
 			else 
 			{
 				corner = ((Long) data.get("DEF_CORNER")).intValue();
+				attack = false;
 			}
 			System.out.println("d1: " + d1 );
 			System.out.println("w1: " + w[0] + " w2: " + w[1]);
@@ -171,25 +243,116 @@ public class DpmProject {
 		}
 	}
 
-	private static void attack() {
-		completeCourse(Utility.pointToDistance(b), Utility.pointToDistance(new int[] {targetX,(targetY-d1)}) );
-		launch.fire(targetX*tileLength, targetY*tileLength); //Change this line so that it calls the fire method in the launcher class	}
+	/**
+	 * Depending on the dispenser position and orientation, it calculates the position and angle our robot should have to get the ball from the dispenser
+	 * @return An array built like this: [x,y,theta]
+	 */
+	private static double[] getDispenserPosition(){
+
+		double []position = new double[3];
+
+		switch(orientation){
+		case "N":
+			position[0] = tileLength*b[0];
+			position[1] = tileLength*b[1] + Constants.CLAW_DISTANCE + Constants.BALLDROP_DISTANCE;
+			position[2] = 90;
+			break;
+		case "S":
+			position[0] = tileLength*b[0];
+			position[1] = tileLength*b[1] - Constants.CLAW_DISTANCE - Constants.BALLDROP_DISTANCE;
+			position[2] = 270;
+			break;
+		case "E":
+			position[0] = tileLength*b[0]+ Constants.CLAW_DISTANCE + Constants.BALLDROP_DISTANCE;
+			position[1] = tileLength*b[1];
+			position[2] = 0;
+			break;
+		case "W":
+			position[0] = tileLength*b[0]- Constants.CLAW_DISTANCE - Constants.BALLDROP_DISTANCE;
+			position[1] = tileLength*b[1];
+			position[2] = 180;
+			break;	
+
+		}
+
+		return position;
 	}
-	
-	private static void completeCourse(int[] p1,int[] p2) {
 
-		int[][] waypoints = {p1,p2};
-
-		for(int[] point : waypoints){
-			nav.travelTo(point[0],point[1],false);
-			while(nav.isTravelling()){
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+	/**
+	 * Makes a beep and then wait 3 seconds for the ball to drop
+	 */
+	private static void ballDrop(){
+		Sound.beep();
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 	}
+
+	private static void findDispenser(float[] colorData, SampleProvider colorSensor, Odometer odom, Navigation nav){
+		
+		launchMotor1.setSpeed(100);
+		launchMotor2.setSpeed(100);
+		launchMotor1.rotate(50,true);
+		launchMotor2.rotate(50,false);
+		launchMotor1.stop();
+		launchMotor2.stop();
+		NUMBER_SHOT += 1;
+
+
+		Navigation.turnTo(PositionforDisp[2]+45, true);
+
+		int lines = 0;
+		boolean overLine = false;
+		boolean firstLine = true;
+
+		Navigation.setSpeeds(150, -150);
+
+		while (lines < 2) {
+			colorSensor.fetchSample(colorData, 0);
+			if ((colorData[0] < Constants.LOWER_LIGHT) && (!overLine)) 
+			{
+				Sound.beep();
+				lines += 1;
+				if(firstLine){
+					if(orientation == "E" || orientation == "W"){
+						odom.setY(b[1]*tileLength+Constants.LIGHT_SENSOR_DISTANCE*Math.sin(Math.toRadians(odom.getTheta())));
+					}
+					else if(orientation == "N" || orientation == "S"){
+						odom.setX(b[0]*tileLength+Constants.LIGHT_SENSOR_DISTANCE*Math.cos(Math.toRadians(odom.getTheta())));
+					}
+					firstLine = false;
+				}
+				else{
+					if(orientation == "E"){
+						odom.setX(Constants.LIGHT_SENSOR_DISTANCE*Math.cos(Math.toRadians(odom.getTheta())));
+					}
+
+					else if(orientation == "W"){
+						odom.setX((gridWidth-1)*tileLength+Constants.LIGHT_SENSOR_DISTANCE*Math.cos(Math.toRadians(odom.getTheta())));
+					}
+					else if(orientation == "N"){
+						odom.setY(Constants.LIGHT_SENSOR_DISTANCE*Math.sin(Math.toRadians(odom.getTheta())));
+					}
+					else if(orientation == "S"){
+						odom.setY((gridHeight-1)*tileLength+Constants.LIGHT_SENSOR_DISTANCE*Math.sin(Math.toRadians(odom.getTheta())));
+					}
+
+				}
+
+
+				overLine = true;
+			}
+			if ((colorData[0] > Constants.UPPER_LIGHT) && (overLine)) 
+			{
+				overLine = false;
+			}
+		}
+		Navigation.stopMotors();
+		Thread.yield();
+		try {Thread.sleep(500);} catch (InterruptedException e) {e.printStackTrace();}
+	}
+
 
 }

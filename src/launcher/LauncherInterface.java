@@ -1,5 +1,5 @@
 package launcher;
 
 public interface LauncherInterface {
-	public void fire(double x, double y);
+	public void fire(double x, double y, int d1);
 }

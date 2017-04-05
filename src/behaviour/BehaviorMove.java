@@ -62,7 +62,6 @@ public class BehaviorMove implements Behavior{
 				Sound.beep();
 				Thread.sleep(3000);
 				//Navigation.turnTo(DpmProject.PositionforDisp[2]+45,true);
-				
 				Navigation.startCorrect=true;
 				Thread.yield();
 

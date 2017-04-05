@@ -55,7 +55,7 @@ public class DpmProject {
 	public static float[] colorData;
 
 	//Wifi
-	private static final String SERVER_IP = "192.168.2.28";
+	private static final String SERVER_IP = "192.168.2.28"; //Competition IP
 	private static final int TEAM_NUMBER = 8;
 	private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
 
@@ -117,6 +117,7 @@ public class DpmProject {
 		usl.doLocalization();
 		lightloc.doTransition();
 		lightloc.doLocalization();
+		Sound.beep();
 
 		gyroSensor.reset();
 		switch(corner) {

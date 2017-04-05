@@ -31,15 +31,16 @@ import java.util.Map;
 import constants.Constants;
 import behaviour.BehaviorAvoid;
 import behaviour.BehaviorMove;
+import behaviour.BehaviourDefend;
 import display.Display;
 
 public class DpmProject {
 
 	//Motors
-	private static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
-	private static final EV3LargeRegulatedMotor launchMotor1 = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
-	private static final EV3LargeRegulatedMotor launchMotor2 = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
-	private static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
+	public static final EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
+	public static final EV3LargeRegulatedMotor launchMotor1 = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("B"));
+	public static final EV3LargeRegulatedMotor launchMotor2 = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("C"));
+	public static final EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
 	//Sensors
 	private static final Port usPort1 = LocalEV3.get().getPort("S1");
 	private static final Port usPort2 = LocalEV3.get().getPort("S4");
@@ -50,39 +51,39 @@ public class DpmProject {
 	public static Odometer odometer;
 	private static USLocalizer usl;
 	private static LightLocalizer lightloc;
-	private static SampleProvider colorSensor;
+	public static SampleProvider colorSensor;
 	public static float[] colorData;
 
 	//Wifi
-	private static final String SERVER_IP = "192.168.2.11";
+	private static final String SERVER_IP = "192.168.2.28";
 	private static final int TEAM_NUMBER = 8;
 	private static final boolean ENABLE_DEBUG_WIFI_PRINT = true;
 
 	//Wifi Data
-	public static int d1;
+	public static int d1 = 7;
 	private static int[] w;
-	private static int[] b;
-	private static String orientation;
-	private static int corner=2;
+	public static int[] b = new int[] {-1,2};
+	public static String orientation = "E";
+	private static int corner=1;
 	private static boolean attack=true;
 
 	//Grid Details
-	public static int gridWidth = 8;
-	public static int gridHeight = 8;
-	public static int targetX = 4;
-	public static int targetY = 7;
+	public static int gridWidth = 12;
+	public static int gridHeight = 12;
+	public static int targetX = 5;
+	public static int targetY = 10;
 	public static double tileLength = 30.48;
 	static int NUMBER_SHOT = 0;
-	static double PositionforDisp[] = new double [3];
+	public static double PositionforDisp[] = new double [3];
 	public static SensorMode colorValue;
+	public static EV3UltrasonicSensor usSensor1;
+	public static EV3UltrasonicSensor usSensor2;
 
 
 	public static void main(String[] args) {
-		//Instaniate objects
-		@SuppressWarnings("resource")
-		SensorModes usSensor1 = new EV3UltrasonicSensor(usPort1);
+		usSensor1 = new EV3UltrasonicSensor(usPort1);
 		SampleProvider usDistance1 = usSensor1.getMode("Distance");
-		SensorModes usSensor2 = new EV3UltrasonicSensor(usPort2);
+		usSensor2 = new EV3UltrasonicSensor(usPort2);
 		SampleProvider usDistance2 = usSensor2.getMode("Distance");
 		TextLCD t = LocalEV3.get().getTextLCD();	
 		SensorModes colorSensor = new EV3ColorSensor(colorPort);
@@ -113,9 +114,9 @@ public class DpmProject {
 		wifiPrint();
 		print.start();
 
-		//usl.doLocalization();
-		//lightloc.doTransition();
-		//lightloc.doLocalization();
+		usl.doLocalization();
+		lightloc.doTransition();
+		lightloc.doLocalization();
 
 		gyroSensor.reset();
 		switch(corner) {
@@ -183,7 +184,23 @@ public class DpmProject {
 			}
 		}
 		else{
-			//defend
+			launchMotor1.setSpeed(50);
+			launchMotor2.setSpeed(50);
+			launchMotor1.rotate(-45,true);
+			launchMotor2.rotate(-45,false);
+			//Lock the launchers
+			launchMotor1.stop();
+			launchMotor2.stop();
+			
+			Behavior move = new BehaviourDefend(targetX*tileLength,(targetY - d1 + 0.5)*tileLength);
+			Behavior avoid = new BehaviorAvoid();		
+
+			// define an array (vector) of existing behaviors, sorted by priority
+			Behavior behaviors[] = { move, avoid };
+
+			// add the behavior vector to a new arbitrator and start arbitration
+			Arbitrator arbitrator = new Arbitrator(behaviors);
+			arbitrator.go();		
 		}
 
 		//attack();
@@ -296,23 +313,25 @@ public class DpmProject {
 		launchMotor2.rotate(50,false);
 		launchMotor1.stop();
 		launchMotor2.stop();
-		NUMBER_SHOT += 1;
+	//	NUMBER_SHOT += 1;
 
 
-		Navigation.turnTo(PositionforDisp[2]+45, true);
+		Navigation.turnTo(PositionforDisp[2]+45,true);
 
 		int lines = 0;
 		boolean overLine = false;
 		boolean firstLine = true;
 
-		Navigation.setSpeeds(150, -150);
+	
 
 		while (lines < 2) {
+			leftMotor.forward();
+			rightMotor.backward();
 			colorSensor.fetchSample(colorData, 0);
 			if ((colorData[0] < Constants.LOWER_LIGHT) && (!overLine)) 
 			{
 				Sound.beep();
-				lines += 1;
+				lines = lines + 1;
 				if(firstLine){
 					if(orientation == "E" || orientation == "W"){
 						odom.setY(b[1]*tileLength+Constants.LIGHT_SENSOR_DISTANCE*Math.sin(Math.toRadians(odom.getTheta())));
@@ -348,8 +367,9 @@ public class DpmProject {
 			}
 		}
 		Navigation.stopMotors();
-		Thread.yield();
-		try {Thread.sleep(500);} catch (InterruptedException e) {e.printStackTrace();}
+		Sound.beep();
+		//Thread.yield();
+		//try {Thread.sleep(500);} catch (InterruptedException e) {e.printStackTrace();}
 	}
 
 

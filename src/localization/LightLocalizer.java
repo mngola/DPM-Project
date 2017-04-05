@@ -73,7 +73,7 @@ public class LightLocalizer extends Thread {
 				lineAngle2 = odo.getTheta();
 				lineAngles[lines] = (lineAngle2 + lineAngle1) / 2.0;
 				lines++;
-				lejos.hardware.Sound.playTone(4000, 100);
+				//lejos.hardware.Sound.playTone(4000, 100);
 				overLine = false;
 			}
 		}

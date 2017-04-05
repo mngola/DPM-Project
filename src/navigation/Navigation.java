@@ -20,6 +20,7 @@ public class Navigation {
 	static Arbitrator arbitrator;
 	public static boolean beginNav = false;
 	public static double destX,destY;
+	public static boolean startCorrect = false;
 	
 	public Navigation(Odometer odo, USPoller lUsp, USPoller rUsp) {
 		odometer = odo;
@@ -163,10 +164,13 @@ public class Navigation {
 			}
 			error = angle - odometer.getTheta();
 		}
-
+		
 		if (finish || stop) {
 			stopMotors();
 		}
+		
+		int x=0;
+		x++;
 	}
 
 	/*

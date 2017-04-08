@@ -3,8 +3,6 @@ package localization;
 import navigation.Navigation;
 import odometry.Odometer;
 import polling.USPoller;
-import utility.Utility;
-import lejos.hardware.Sound;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import constants.Constants;
 
@@ -18,6 +16,14 @@ public class USLocalizer implements LocalizationInterface {
 	private static EV3LargeRegulatedMotor lfmt;
 	private static EV3LargeRegulatedMotor rgmt;
 
+	/**
+	 * Constructor; requiring odometer, an ultrasonic poller, the localization type, the left and right motors 
+	 * @param odom
+	 * @param us
+	 * @param loc
+	 * @param leftmotor
+	 * @param rightmotor
+	 */
 	public USLocalizer(Odometer odom,  USPoller us, LocalizationType loc, EV3LargeRegulatedMotor leftmotor, EV3LargeRegulatedMotor rightmotor) {
 		odo = odom;
 		poller = us;
@@ -26,12 +32,13 @@ public class USLocalizer implements LocalizationInterface {
 		rgmt = rightmotor;
 	}
 
+	/**
+	 * The ultrasonic localization routine
+	 */
 	public void doLocalization() {
-
 
 		odo.setPosition(new double [] {0.0, 0.0, 0.0}, new boolean [] {false, false, true});
 
-		double [] pos = new double [3];
 		double angleA, angleB, correctionangle;
 
 		if (locType == LocalizationType.FALLING_EDGE) {
@@ -74,51 +81,12 @@ public class USLocalizer implements LocalizationInterface {
 				turn(correctionangle);
 			}
 
-
-
 			// update the odometer position (example to follow:)
 			odo.setPosition(new double [] {0.0, 0.0, 45}, new boolean [] {false, false, true});
 
 
 
 		}
-	}
-
-
-	/*
-	 * move: false for falling edge, true for rising edge
-	 */
-	private double latchEdge(boolean move) {
-		double ang1 = 0.0;
-		double ang2 = 0.0;
-		boolean inNoiseMargin = false;
-
-		if (move) {
-			boolean wall = true;
-			while (wall) {
-				if (inNoiseMargin && (poller.getDistance() > Constants.LOW_NOISE)) {
-					ang2 = odo.getTheta();
-					wall = false;
-				} else if (poller.getDistance() > Constants.UPPER_NOISE) {
-					ang1 = odo.getTheta();
-					inNoiseMargin = true;
-				}
-			}
-		}
-		else {
-			boolean wall = false;
-			while (!wall) {
-				if (inNoiseMargin && (poller.getDistance() < Constants.LOW_NOISE)) {
-					ang2 = odo.getTheta();
-					wall = true;
-				} else if (poller.getDistance() < Constants.UPPER_NOISE) {
-					ang1 = odo.getTheta();
-					inNoiseMargin = true;
-				}
-			}
-		}
-
-		return (ang1 + ang2) / 2.0;
 	}
 
 	public static void turn(double angle){

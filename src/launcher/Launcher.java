@@ -19,6 +19,13 @@ public class Launcher extends Thread implements LauncherInterface {
 		lm2 = launchmotor2;
 	}
 
+	/**
+	 * @param targetX
+	 * @param targetY
+	 * @param d1
+	 * 
+	 * fires the laucher, the rotation angle is determined by d1
+	 */
 	public void fire(double targetX, double targetY, int d1) {
 		
 		

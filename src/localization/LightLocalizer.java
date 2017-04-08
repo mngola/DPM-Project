@@ -14,6 +14,14 @@ public class LightLocalizer extends Thread {
 	private EV3LargeRegulatedMotor lfmt;
 	private EV3LargeRegulatedMotor rgmt;
 
+	/**
+	 * Constructor; requiring odometer, colour sensor, colour data, the left and right motors 
+	 * @param odometer
+	 * @param colSen
+	 * @param colData
+	 * @param leftmotor
+	 * @param rightmotor
+	 */
 	public LightLocalizer(Odometer odometer, SampleProvider colSen, float[] colData, EV3LargeRegulatedMotor leftmotor, EV3LargeRegulatedMotor rightmotor) {
 		odo = odometer;
 		colorSensor = colSen;
@@ -21,7 +29,11 @@ public class LightLocalizer extends Thread {
 		lfmt = leftmotor; 
 		rgmt = rightmotor;
 	}
-
+	
+	/**
+	 * The transition from ultrasonic localization to light sensor localization
+	 * Moves the bot forward until it sees a line, then moves it back
+	 */
 	public void doTransition(){
 		colorSensor.fetchSample(colorData, 0);
 		while(colorData[0] > Constants.LOWER_LIGHT){
@@ -35,11 +47,10 @@ public class LightLocalizer extends Thread {
 		rgmt.rotate(-Utility.convertDistance(Constants.WHEEL_RADIUS, 15 ), false);
 	}
 
+	/**
+	 * The light sensor localization routine 
+	 */
 	public void doLocalization() {
-		// Drive to the localization location (close to (0,0))
-		//navigator.turnTo(45.0, true);
-		//navigator.goForward(10.0);
-
 		/*
 		 * Track the angles using an array
 		 *  index 0: -x axis, index 1: +y axis, index 2: +x axis index 3: -y axis 
@@ -106,21 +117,6 @@ public class LightLocalizer extends Thread {
 		Navigation.travelTo(0.0, 0.0);
 		Navigation.turnTo(0, true);
 		odo.setPosition(new double [] {0.0, 0.0, 0.0}, new boolean [] {true, true, true});
-		//		//Correct Theta
-		//		double deltaTheta = Math.toDegrees(Math.acos(-(correctX+1.7)/Constants.LIGHT_SENSOR_DISTANCE));		
-		//		double correctTheta = 180-deltaTheta;
-		//
-		//
-		//		//Set the odometer to the corrected position 
-		//		odo.setPosition(new double[] { correctY, correctX, correctTheta }, new boolean[] { true, true, true });
-		//
-		//		Navigation.turn(-correctTheta);
-		//		
-		//		// when done travel to (0,0) and turn to 0 degrees
-		//		Navigation.travelTo(0.0, 0.0);
-		//		Navigation.turnTo(0, true);
-		//		odo.setPosition(new double [] {0.0, 0.0, 0}, new boolean [] {true, true, true});
-
 	}
 
 }

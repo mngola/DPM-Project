@@ -8,7 +8,12 @@ public class BehaviorAvoid implements Behavior
 	private int leftDist;
 	private int rightDist;
 
-	// what to do
+	/**
+	 * The functions the behaviour should perform. The avoidance routine should
+	 * turn 90 degrees based on which sensor detected the obstacle. Move forward, turn back 90 degrees
+	 * move forward and then yield. 
+	 *
+	 */
 	public void action()
 	{	
 		try
@@ -33,13 +38,18 @@ public class BehaviorAvoid implements Behavior
 		}
 	}
 
-	// how to stop doing it
+	/**
+	 * The method for stopping the behaviour
+	 */
 	public void suppress()
 	{	
 		Navigation.stop();
 	}
-
-	// when to start doing it
+	
+	/**
+	 * 
+	 * @return A boolean determining when this behaviour should take control
+	 */
 	public boolean takeControl()
 	{
 		leftDist = Navigation.lPoller.getDistance();

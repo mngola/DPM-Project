@@ -18,7 +18,11 @@ public class BehaviourDefend implements Behavior {
 	public boolean takeControl() {
 		return true;
 	}
-
+	/**
+	 * Moves the robot to the edge of d1, disables the sensors
+	 * This is meant to trigger the attacker's obstacle avoidance routine
+	 * preventing them from firing
+	 */
 	@Override
 	public void action() {
 		stop = false;

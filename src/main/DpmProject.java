@@ -20,10 +20,8 @@ import lejos.robotics.SampleProvider;
 import lejos.robotics.subsumption.Arbitrator;
 import lejos.robotics.subsumption.Behavior;
 import odometry.Odometer;
-import odometry.OdometerCorrection;
 import polling.GyroPoller;
 import polling.USPoller;
-import utility.Utility;
 import wifi.WifiConnection;
 
 import java.util.Map;
@@ -46,6 +44,7 @@ public class DpmProject {
 	private static final Port usPort2 = LocalEV3.get().getPort("S4");
 	private static final Port colorPort = LocalEV3.get().getPort("S2");
 	private static final Port gyroPort = LocalEV3.get().getPort("S3");
+	@SuppressWarnings("unused")
 	private static Navigation nav;
 	public static Launcher launch;
 	public static Odometer odometer;
@@ -80,6 +79,7 @@ public class DpmProject {
 	public static EV3UltrasonicSensor usSensor2;
 
 
+	@SuppressWarnings({ "resource", "unused" })
 	public static void main(String[] args) {
 		usSensor1 = new EV3UltrasonicSensor(usPort1);
 		SampleProvider usDistance1 = usSensor1.getMode("Distance");
@@ -91,14 +91,12 @@ public class DpmProject {
 		float[] colorData = new float[colorValue.sampleSize()];	
 		EV3GyroSensor gyroSensor = new EV3GyroSensor(gyroPort);
 		SampleProvider gyroSamples = gyroSensor.getMode("Angle");
-		//gyroSensor.reset();
 
 		GyroPoller gPoller = new GyroPoller(gyroSamples);
 		Odometer odometer = new Odometer(leftMotor, rightMotor,gPoller);
 		USPoller usPoller1 = new USPoller(usDistance1);
 		USPoller usPoller2 = new USPoller(usDistance2);
 		nav = new Navigation(odometer,usPoller1,usPoller2);
-		//OdometerCorrection odoCorr = new OdometerCorrection(odometer,colorValue, colorData);
 
 		lightloc = new LightLocalizer(odometer, colorValue, colorData,leftMotor,rightMotor);
 		usl = new USLocalizer(odometer, usPoller1, LocalizationType.FALLING_EDGE, leftMotor, rightMotor);
@@ -110,7 +108,6 @@ public class DpmProject {
 		usPoller2.start();
 		odometer.start();
 		launch.start();
-		//odoCorr.start();
 		wifiPrint();
 		print.start();
 
@@ -192,7 +189,7 @@ public class DpmProject {
 			//Lock the launchers
 			launchMotor1.stop();
 			launchMotor2.stop();
-			
+
 			Behavior move = new BehaviourDefend(targetX*tileLength,(targetY - d1 + 0.5)*tileLength);
 			Behavior avoid = new BehaviorAvoid();		
 
@@ -203,13 +200,6 @@ public class DpmProject {
 			Arbitrator arbitrator = new Arbitrator(behaviors);
 			arbitrator.go();		
 		}
-
-		//attack();
-		//nav.travelTo(2);
-		//nav.travelTo(6*tileLength, 1*tileLength);
-		///nav.travelTo(0,0);
-		//nav.turnTo(0, true);
-
 
 		while (Button.waitForAnyPress() != Button.ID_ESCAPE);
 		System.exit(0);
@@ -314,7 +304,7 @@ public class DpmProject {
 		launchMotor2.rotate(50,false);
 		launchMotor1.stop();
 		launchMotor2.stop();
-	//	NUMBER_SHOT += 1;
+		//	NUMBER_SHOT += 1;
 
 
 		Navigation.turnTo(PositionforDisp[2]+45,true);
@@ -323,7 +313,7 @@ public class DpmProject {
 		boolean overLine = false;
 		boolean firstLine = true;
 
-	
+
 
 		while (lines < 2) {
 			leftMotor.forward();
@@ -369,9 +359,5 @@ public class DpmProject {
 		}
 		Navigation.stopMotors();
 		Sound.beep();
-		//Thread.yield();
-		//try {Thread.sleep(500);} catch (InterruptedException e) {e.printStackTrace();}
 	}
-
-
 }

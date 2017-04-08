@@ -1,7 +1,5 @@
 package navigation;
 
-import behaviour.BehaviorAvoid;
-import behaviour.BehaviorMove;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.subsumption.Arbitrator;
 import lejos.robotics.subsumption.Behavior;
@@ -21,7 +19,12 @@ public class Navigation {
 	public static boolean beginNav = false;
 	public static double destX,destY;
 	public static boolean startCorrect = false;
-	
+	/**
+	 * Constructor for Navigation. Takes an odometer, and two ultrasonic pollers
+	 * @param odo
+	 * @param lUsp
+	 * @param rUsp
+	 */
 	public Navigation(Odometer odo, USPoller lUsp, USPoller rUsp) {
 		odometer = odo;
 		lPoller = lUsp;
@@ -37,8 +40,10 @@ public class Navigation {
 	}
 
 	
-	/*
+	/**
 	 * Functions to set the motor speeds jointly
+	 * @param lSpd
+	 * @param rSpd
 	 */
 	public static void setSpeeds(int lSpd, int rSpd)
 	{
@@ -54,6 +59,11 @@ public class Navigation {
 			rightMotor.forward();
 	}
 
+	/**
+	 * Functions to set the motor speeds jointly
+	 * @param lSpd
+	 * @param rSpd
+	 */
 	public static void setSpeeds(float lSpd, float rSpd)
 	{
 		leftMotor.setSpeed(lSpd);
@@ -68,7 +78,7 @@ public class Navigation {
 			rightMotor.forward();
 	}
 
-	/*
+	/**
 	 * Float the two motors jointly
 	 */
 	public static void setFloat() {
@@ -78,7 +88,7 @@ public class Navigation {
 		rightMotor.flt(true);
 	}
 
-	/*
+	/**
 	 * Stop the motors jointly
 	 */
 	public static void stopMotors() {
@@ -86,7 +96,7 @@ public class Navigation {
 		rightMotor.stop(false);
 	}
 
-	/*
+	/**
 	 * Stops all turning and traveling immediately
 	 */
 	public static void stop()
@@ -94,9 +104,11 @@ public class Navigation {
 		stop = true;
 	}
 	
-	/*
+	/**
 	 * TravelTo function which takes as arguments the x and y position in cm Will travel to designated position, while
 	 * constantly updating it's heading
+	 * @param x
+	 * @param y
 	 */
 	public static void travelTo(double x, double y) {
 		stop = false;
@@ -118,22 +130,32 @@ public class Navigation {
 		stopMotors();
 	}
 	
-	/*
+	/**
 	 * Check if the robot has reached its destination, within the CM_ERR
+	 * @param x
+	 * @param y
+	 * @return a boolean for whether the robot is at the destination
 	 */
 	public static boolean checkIfDone(double x, double y) {
 		return Math.abs(x - odometer.getX()) < Constants.CM_ERR
 				&& Math.abs(y - odometer.getY()) < Constants.CM_ERR;
 	}
 
-	/*
+	/**
 	 * Check if the robot is facing the correct direction, within the DEG_ERR
+	 * @param angle
+	 * @return  a boolean for whether the robot is facing the specified angle
 	 */
 	protected static boolean facingDest(double angle) {
 		return Math.abs(angle - odometer.getTheta()) < Constants.DEG_ERR;
 	}
 
-	// Compute the destination angle 
+	/**
+	 * Compute the destination angle 
+	 * @param x
+	 * @param y
+	 * @return the angle of the destination point 
+	 */
 	protected static double getDestAngle(double x, double y) {
 		double minAng = Math.toDegrees((Math.atan2(y - odometer.getY(), x - odometer.getX())));
 		if (minAng < 0) {
@@ -142,9 +164,11 @@ public class Navigation {
 		return minAng;
 	}
 
-	/*
+	/**
 	 * TurnTo function which takes an angle and boolean as arguments The boolean controls whether or not to stop the
 	 * motors when the turn is completed
+	 * @param angle
+	 * @param finish
 	 */
 	public static void turnTo(double angle, boolean finish) {
 
@@ -168,19 +192,21 @@ public class Navigation {
 		if (finish || stop) {
 			stopMotors();
 		}
-		
-		int x=0;
-		x++;
 	}
 
-	/*
+	/**
 	 * Go foward a set distance in cm
+	 * @param distance
 	 */
 	public static void goForward(double distance) {
 		leftMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance),true);		
 		rightMotor.rotate(Utility.convertDistance(Constants.WHEEL_RADIUS, distance),false);
 	}
 	
+	/**
+	 * Turn a set angle in degrees
+	 * @param destTheta
+	 */
 	public static void turn(double destTheta)
 	{
 		double dTheta = destTheta - odometer.getTheta();

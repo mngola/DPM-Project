@@ -1,5 +1,4 @@
 package behaviour;
-import constants.Constants;
 import lejos.hardware.Sound;
 import lejos.robotics.subsumption.*;
 import main.DpmProject;
@@ -9,6 +8,11 @@ public class BehaviorMove implements Behavior{
 	boolean stop = false;
 	double destx,desty;
 
+	/**
+	 * 
+	 * @param x The x position of the dispenser 
+	 * @param y The y position of the dispenser 
+	 */
 	public BehaviorMove(double x, double y)
 	{
 		destx = x;
@@ -19,6 +23,10 @@ public class BehaviorMove implements Behavior{
 		return true;
 	}
 
+	/**
+	 * The attack routine of the robot. Moves the robot to the dispenser
+	 * lowers the launcher, beeps, moves to the shootin position and fires.
+	 */
 	@Override
 	public void action() {
 		stop = false;
@@ -33,8 +41,7 @@ public class BehaviorMove implements Behavior{
 					break;
 				}
 				
-				//DpmProject.findDispenser(DpmProject.colorData,DpmProject.colorValue, DpmProject.odometer);
-				DpmProject.launchMotor1.flt();;
+				DpmProject.launchMotor1.flt();
 				DpmProject.launchMotor2.flt();
 				DpmProject.launchMotor1.setSpeed(100);
 				DpmProject.launchMotor2.setSpeed(100);
@@ -61,7 +68,6 @@ public class BehaviorMove implements Behavior{
 				Navigation.turnTo(angle, true);
 				Sound.beep();
 				Thread.sleep(3000);
-				//Navigation.turnTo(DpmProject.PositionforDisp[2]+45,true);
 				Navigation.startCorrect=true;
 				Thread.yield();
 
